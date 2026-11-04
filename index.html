@@ -15,6 +15,7 @@
 <title>Remember That</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700;800&family=Figtree:wght@500;600;700&family=Roboto:wght@400;500;700&family=Grand+Hotel&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Fraunces:opsz,wght@9..144,600&family=Outfit:wght@400;500;600;700&display=swap">
 <script src="lucide.min.js"></script>
+<script src="supabase.js"></script>
 <style>
 /* Layout: phone = stacked feed + bottom tab bar with centre capture; desktop = sidebar + wide masonry grid */
 :root{
@@ -764,6 +765,9 @@ textarea.in{min-height:72px;resize:vertical}
 .hdr-tabs{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:8px 12px;border-radius:14px;border:1.5px dashed var(--line);flex-wrap:wrap}
 .hdr-tabs>span{font-size:12.5px;font-weight:600;color:var(--muted)}
 .hdr-tabs .seg button{padding:6px 14px;font-weight:600;font-size:13px}
+.sync-pill{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:13px;color:var(--muted)}
+.sync-pill svg{width:16px;height:16px;color:#30a46c}
+.acct{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
 .fp-h{margin:16px 0 6px;font-size:12.5px;font-weight:600;color:var(--muted)}
 .fprompts{display:flex;gap:6px;flex-wrap:wrap}
 .fwrap .in{background:var(--surface)}
@@ -969,8 +973,14 @@ function idbDel(k){try{idb&&idb.transaction("img","readwrite").objectStore("img"
 function idbAll(){return new Promise(r=>{if(!idb)return r();try{const rq=idb.transaction("img").objectStore("img").openCursor();rq.onsuccess=()=>{const c=rq.result;if(c){IMG.set(c.key,c.value);c.continue()}else r()};rq.onerror=()=>r()}catch(e){r()}})}
 function load(){try{const r=localStorage.getItem(KEY);if(r)S=JSON.parse(r)}catch(e){}
  if(!S)S={items:[],collections:[],accent:"white",palette:"sorbet",catLayout:"grid",layout:"grid",active:CATS.map(c=>c.id)};S.style="clean";}
-function save(){const items=S.items.map(i=>{if(i.img&&i.img.startsWith("data:")){if(IMG.get(i.id)!==i.img){IMG.set(i.id,i.img);idbPut(i.id,i.img)}return {...i,img:"idb"}}if(!i.img&&IMG.has(i.id)){IMG.delete(i.id);idbDel(i.id)}return i});
+function writeLocal(){const items=S.items.map(i=>{if(i.img&&i.img.startsWith("data:")){if(IMG.get(i.id)!==i.img){IMG.set(i.id,i.img);idbPut(i.id,i.img)}return {...i,img:"idb"}}if(!i.img&&IMG.has(i.id)){IMG.delete(i.id);idbDel(i.id)}return i});
  try{localStorage.setItem(KEY,JSON.stringify({...S,items}))}catch(e){try{toast("Storage is full. Try removing some photos.")}catch(x){}}}
+const SNAP=new Map();let SNAPM="";
+function ikey(i){return JSON.stringify({...i,img:i.img?(i.img.startsWith("data:")?"d"+i.img.length+i.img.slice(-16):i.img==="cloud"?"d":i.img):null,u:0,cimg:0})}
+function mkey(){const {items,mu,...m}=S;return JSON.stringify(m)}
+function resnap(){SNAP.clear();S.items.forEach(i=>SNAP.set(i.id,ikey(i)));SNAPM=mkey()}
+function stamp(){const now=Date.now();S.items.forEach(i=>{const k=ikey(i);if(SNAP.get(i.id)!==k){i.u=now;SNAP.set(i.id,k)}});const m=mkey();if(m!==SNAPM){S.mu=now;SNAPM=m}}
+function save(){stamp();writeLocal();schedulePush()}
 load();
 (S.customCats||[]).forEach(c=>{if(!catById(c.id))CATS.push({...c,c0:c.c})});
 S.active=[...new Set([...(S.active||[]),...(S.customCats||[]).map(c=>c.id)])];
@@ -992,7 +1002,7 @@ function greeting(){const h=new Date().getHours();const t=h<12?"Good morning":h<
 
 function coverType(i){const cv=i.cover||{};if(cv.type&&cv.type!=="auto")return cv.type;if(i.place)return "map";if(i.cat&&catKey(i.cat)==="quotes")return "text";return "icon"}
 function niceDate(v){try{const d=new Date(v+"T00:00");return isNaN(d)?v:d.toLocaleDateString("en-AU",{day:"numeric",month:"long"})}catch(e){return v}}
-function ph(i,h){const c=catOf(i);if(!i.img&&i.cat==="birthdays"&&i.f&&i.f.date&&h>=80)return `<div class="ph cov-text cov-bday" style="--c:${(i.cover&&i.cover.color)||c.c};height:${h}px"><span><small>${esc(niceDate(i.f.date))}</small>${esc(i.title)}</span></div>`;if(i.img)return `<div class="ph" style="--c:${c.c};height:${h}px"><img src="${i.img}" alt=""></div>`;let t=coverType(i);const col=(i.cover&&i.cover.color)||c.c;
+function ph(i,h){const c=catOf(i);if(!i.img&&i.cat==="birthdays"&&i.f&&i.f.date&&h>=80)return `<div class="ph cov-text cov-bday" style="--c:${(i.cover&&i.cover.color)||c.c};height:${h}px"><span><small>${esc(niceDate(i.f.date))}</small>${esc(i.title)}</span></div>`;if(i.img&&i.img!=="cloud")return `<div class="ph" style="--c:${c.c};height:${h}px"><img src="${i.img}" alt=""></div>`;let t=coverType(i);const col=(i.cover&&i.cover.color)||c.c;
  if(t==="text"&&h<80)t="icon";if(t==="map"&&!i.place)t="icon";
  if(t==="text")return `<div class="ph cov-text" style="--c:${col};height:${h}px"><span>${esc(i.title)}</span></div>`;
  if(t==="map")return `<div class="ph cov-map" style="--c:${col};height:${h}px">${MAPSVG}<span class="pin" style="--c:${col};left:${i.x||50}%;top:${Math.max(32,i.y||45)}%"><i data-lucide="${c.icon}"></i></span></div>`;
@@ -1267,6 +1277,43 @@ function shareSheet(){const n=ctx.coll,ms=(S.shares||{})[n]||[];openSheet(`<div 
  <label class="f" for="shName">Invite someone</label><input class="in" id="shName" placeholder="Name or email, e.g. Jess">
  <div class="optpills" style="margin-top:8px">${["Can add","Can view"].map(r=>`<button type="button" class="sg${shRole===r?" on":""}" data-shrole="${r}">${r}</button>`).join("")}</div>
  <div class="sheet-foot"><button class="btn" data-close>Done</button><button class="btn primary" id="shInvite"><i data-lucide="send"></i>Invite</button></div>`)}
+
+/* ---------- sign-in and sync ---------- */
+const SB_URL="__SB_URL__",SB_KEY="__SB_KEY__";
+let sb=null,user=null,syncing=false,syncAgain=false,syncT=null,lastSync=null,syncErr=null,otpEmail=null;
+function sbReady(){return /^https:\/\//.test(SB_URL)&&!!window.supabase}
+function syncText(){return syncErr?"Sync problem: "+syncErr:syncing?"Syncing…":lastSync?"Synced "+new Date(lastSync).toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit"}):"Not synced yet"}
+function updSyncUI(){document.querySelectorAll(".sync-state").forEach(el=>el.textContent=syncText())}
+function schedulePush(){if(!user)return;clearTimeout(syncT);syncT=setTimeout(push,1200)}
+function imgSig(v){return v.length+":"+v.slice(-24)}
+function initSync(){if(!sbReady())return;try{sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}})}catch(e){return}
+ sb.auth.getSession().then(({data})=>{user=data&&data.session?data.session.user:null;render();if(user)pull()});
+ sb.auth.onAuthStateChange((ev,ses)=>{const was=!!user;user=ses?ses.user:null;if(was!==!!user)render()});
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&user)pull()});
+ window.addEventListener("online",()=>{if(user)pull()})}
+async function push(){if(!user)return;if(syncing){syncAgain=true;return}syncing=true;updSyncUI();try{
+ for(const i of S.items){if(i.img&&i.img.startsWith("data:")&&i.cimg!==imgSig(i.img)){const b=await (await fetch(i.img)).blob();const {error}=await sb.storage.from("images").upload(`${user.id}/${i.id}.jpg`,b,{upsert:true,contentType:"image/jpeg"});if(error)throw error;i.cimg=imgSig(i.img)}}
+ const items=S.items.map(i=>({...i,img:i.img?"cloud":null}));const {items:_x,...meta}=S;
+ const {error}=await sb.from("user_state").upsert({user_id:user.id,state:{v:1,items,meta},updated_at:new Date().toISOString()});if(error)throw error;
+ lastSync=Date.now();syncErr=null;writeLocal()}catch(e){syncErr=(e&&e.message)||"couldn’t reach the server"}finally{syncing=false;updSyncUI();if(syncAgain){syncAgain=false;push()}}}
+function union(a,b){return [...new Set([...(a||[]),...(b||[])])]}
+function merge(cs){const map=new Map(S.items.map(i=>[i.id,i]));
+ (cs.items||[]).forEach(ci=>{const li=map.get(ci.id);if(!li||(ci.u||0)>(li.u||0)){const img=ci.img==="cloud"?(li&&li.img&&li.img!=="cloud"&&li.cimg===ci.cimg?li.img:(IMG.get(ci.id)&&ci.cimg&&imgSig(IMG.get(ci.id))===ci.cimg?IMG.get(ci.id):"cloud")):null;map.set(ci.id,{...ci,img})}});
+ S.items=[...map.values()];const cm=cs.meta||{};
+ const lists={collections:union(S.collections,cm.collections),active:union(S.active,cm.active),customCats:[...new Map([...(cm.customCats||[]),...(S.customCats||[])].map(c=>[c.id,c])).values()]};
+ const subs={...(cm.subs||{})};Object.entries(S.subs||{}).forEach(([k,v])=>subs[k]=union(subs[k],v));
+ const shares={...(cm.shares||{}),...(S.shares||{})};
+ if((cm.mu||0)>(S.mu||0)){const keepKey={};Object.assign(S,cm,{items:S.items})}
+ Object.assign(S,lists,{subs,shares});S.style="clean";
+ (S.customCats||[]).forEach(c=>{if(!catById(c.id))CATS.push({...c,c0:c.c})})}
+async function fetchImgs(){for(const i of S.items){if(i.img==="cloud"){try{const {data,error}=await sb.storage.from("images").download(`${user.id}/${i.id}.jpg`);if(error||!data){i.img=null;continue}
+ const url=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(data)});i.img=url;i.cimg=imgSig(url)}catch(e){}}}}
+async function pull(){if(!user||syncing)return;syncing=true;updSyncUI();try{const {data,error}=await sb.from("user_state").select("state").eq("user_id",user.id).maybeSingle();if(error)throw error;
+ if(data&&data.state)merge(data.state);await fetchImgs();writeLocal();resnap();syncErr=null}catch(e){syncErr=(e&&e.message)||"couldn’t reach the server"}finally{syncing=false}
+ render();push()}
+function accountCard(){if(!sbReady())return "";
+ if(user)return `<div class="set-card"><h3><i data-lucide="cloud"></i> Signed in and syncing</h3><p class="note" style="margin:0 0 10px">${esc(user.email||"")} · <span class="sync-state">${esc(syncText())}</span></p><div class="bk-row"><button class="btn" id="syncNow"><i data-lucide="refresh-cw"></i>Sync now</button><button class="link-btn" id="signOut">Sign out</button></div></div>`;
+ return `<div class="set-card acct"><h3><i data-lucide="cloud"></i> Sign in to sync</h3><p class="note" style="margin:0 0 10px">See the same saves on your iPhone and Mac. Anything already saved on this device comes with you. No password needed: we email you a code.</p>${otpEmail?`<label class="f" for="otpIn">Enter the 6-digit code sent to ${esc(otpEmail)}</label><div class="rem-row"><input class="in" id="otpIn" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456"><button class="btn primary" id="otpGo" style="flex:none">Sign in</button></div><button class="link-btn" id="otpBack" style="margin-top:8px">Use a different email or send a new code</button>`:`<label class="f" for="emIn">Your email</label><div class="rem-row"><input class="in" id="emIn" type="email" autocomplete="email" placeholder="you@example.com"><button class="btn primary" id="emGo" style="flex:none">Email me a code</button></div>`}</div>`}
 let sortDraft=null;
 function sortCard(id){const i=S.items.find(x=>x.id===id);sortDraft={id,cat:i.sug||guess(i).cat,sug:i.sug||guess(i).cat,f:{...(i.f||{})},sub:i.sub||"",notes:i.notes||""};drawSort()}
 function readSort(){const sd=sortDraft;const s=$("#s-sub");if(s)sd.sub=s.value;const n=$("#s-notes");if(n)sd.notes=n.value;document.querySelectorAll("#sheet [id^='s-f-'][data-fkey]").forEach(e=>sd.f[e.dataset.fkey]=e.value)}
@@ -1345,7 +1392,7 @@ collections(){const it=live();return topbar(`<h1>Collections</h1>`,"Group things
 settings(){const json=JSON.stringify(S);const kb=(json.length/1024).toFixed(0);const bin=S.items.filter(i=>i.deleted);
  const shades=[["white","Clean white","linear-gradient(135deg,#ffffff 50%,#c4577a 50%)"],["blush","Dusty rose","linear-gradient(135deg,#fdf6f8 50%,#c4577a 50%)"],["pastel","Soft pastel","linear-gradient(135deg,#fdf6f8 50%,#f19fbd 50%)"],["hot","Hot pink","linear-gradient(135deg,#fdf6f8 50%,#e0307a 50%)"],["sage","Rose & sage","linear-gradient(135deg,#dbe8d4 50%,#d0668a 50%)"],["peach","Peach sorbet","linear-gradient(135deg,#fde4d6 50%,#ee7a6a 50%)"],["lilac","Lilac","linear-gradient(135deg,#e6dcf5 50%,#c165b9 50%)"],["midnight","Midnight pink","linear-gradient(135deg,#140a14 50%,#ff4f9a 50%)"]];
  return `<button class="back" data-go="home"><i data-lucide="chevron-left"></i>Back</button>`+topbar(`<h1>Settings</h1>`,"")+
- `<div class="set-card"><h3><i data-lucide="lock"></i> Your saves are private</h3><p class="note" style="margin:0">Only you can see what you save. Nothing is shared unless you choose to send it, and you can export everything anytime below.</p></div>`+
+ accountCard()+`<div class="set-card"><h3><i data-lucide="lock"></i> Your saves are private</h3><p class="note" style="margin:0">Only you can see what you save. Nothing is shared unless you choose to send it, and you can export everything anytime below.</p></div>`+
  `<div class="set-card"><h3>Look</h3><div class="looks"><button class="look" data-look="chels" aria-pressed="${S.accent!=="everyone"}"><span class="lk-sw"><i style="background:#c4577a"></i><i style="background:#5fd3b0"></i><i style="background:#ffb347"></i><i style="background:#b39cff"></i></span><b>For Chels</b><span>Dusty pink with soft sorbet colours</span></button><button class="look" data-look="everyone" aria-pressed="${S.accent==="everyone"}"><span class="lk-sw"><i style="background:#2f6bd8"></i><i style="background:#12a594"></i><i style="background:#f76b15"></i><i style="background:#8e4ec6"></i></span><b>For everyone</b><span>Calm blue with clear, balanced colours</span></button></div></div>`+
  `<div class="set-card"><h3>Quick capture on your iPhone</h3><p class="note" style="margin:0 0 12px">Save in one tap without opening the app first. Preview of what you’ll set up:</p>
  <div class="wpre"><div class="w-sm"><span class="w-logo"><i data-lucide="message-circle-heart"></i></span><b>Remember that</b><span class="w-plus"><i data-lucide="plus"></i></span></div>
@@ -1373,7 +1420,7 @@ function sidebar(){const it=live(),inbox=it.filter(i=>!i.cat).length;const cur=v
  <nav class="side-sec">${btn("home","home","Home")}${btn("search","search","Search")}<button class="side-btn" data-cat="__inbox" ${ctx&&ctx.cat==="__inbox"&&view==="list"?'aria-current="page"':""}><span class="ico"><i data-lucide="inbox"></i></span>Inbox${inbox?`<em class="side-badge">${inbox}</em>`:""}</button>${btn("map","map","Map")}${btn("collections","folder-heart","Collections")}</nav>
  <div class="side-label"><span>Categories</span><button class="side-add" data-newcat aria-label="New category" title="New category"><i data-lucide="plus"></i></button></div>
  <div class="side-cats">${shown.map(c=>`<button class="side-btn sc-tint" style="--c:${c.c}" data-cat="${c.id}" data-drop="" data-dropcat="${c.id}" ${ctx&&ctx.cat===c.id&&!ctx.sub&&view==="list"?'aria-current="page"':""}><span class="d" style="background:${c.c}"></span>${esc(c.name)}<small>${it.filter(i=>i.cat===c.id).length||""}</small></button>${sideTree(c)}`).join("")}</div>
- <div class="side-foot"><button class="side-btn" data-quick><span class="ico"><i data-lucide="zap"></i></span>Quick save window</button>${btn("settings","settings","Settings")}</div>`}
+ <div class="side-foot"><button class="side-btn" data-quick><span class="ico"><i data-lucide="zap"></i></span>Quick save window</button>${sbReady()?(user?`<div class="sync-pill"><i data-lucide="cloud"></i><span class="sync-state">${esc(syncText())}</span></div>`:`<button class="side-btn" data-go="settings"><span class="ico"><i data-lucide="cloud"></i></span>Sign in to sync</button>`):""}${btn("settings","settings","Settings")}</div>`}
 
 function render(){applyAccent();$("#main").innerHTML=`<div class="view">${V[view]()}</div>`;sidebar();
  const inb=view==="list"&&ctx&&ctx.cat==="__inbox";document.querySelectorAll(".tab").forEach(t=>t.toggleAttribute("aria-current",t.dataset.cat==="__inbox"?inb:(t.dataset.go===view||(!inb&&view==="list"&&t.dataset.go===(ctx&&ctx.from||"home")))));
@@ -1479,6 +1526,11 @@ document.addEventListener("click",e=>{const t=e.target.closest("[data-fav],butto
  if(ds.shrole){shRole=ds.shrole;return shareSheet()}
  if(ds.shrm!==undefined){S.shares[ctx.coll].splice(+ds.shrm,1);save();render();return shareSheet()}
  if(t.id==="shInvite"){const v=$("#shName").value.trim();if(!v)return toast("Add a name or email first");S.shares=S.shares||{};(S.shares[ctx.coll]=S.shares[ctx.coll]||[]).push({name:v.split("@")[0],role:shRole});save();render();shareSheet();return toast("Added "+v.split("@")[0]+" to this collection. Invites arrive when sign-in is added.")}
+ if(t.id==="emGo"){const e=($("#emIn").value||"").trim();if(!/.+@.+\..+/.test(e))return toast("Enter your email address");t.disabled=true;sb.auth.signInWithOtp({email:e,options:{shouldCreateUser:true}}).then(({error})=>{if(error){t.disabled=false;return toast(error.message)}otpEmail=e;render();toast("Code sent. Check your email (and spam).");setTimeout(()=>{const o=$("#otpIn");if(o)o.focus()},50)});return}
+ if(t.id==="otpGo"){const code=($("#otpIn").value||"").replace(/\s/g,"");if(code.length<6)return toast("Enter the code from the email");t.disabled=true;sb.auth.verifyOtp({email:otpEmail,token:code,type:"email"}).then(({data,error})=>{if(error){t.disabled=false;return toast("That code didn\u2019t work. Check it, or send a new one.")}user=data.user;otpEmail=null;toast("Signed in \u2713 Syncing your saves\u2026",true);pull()});return}
+ if(t.id==="otpBack"){otpEmail=null;return render()}
+ if(t.id==="signOut"){sb.auth.signOut().then(()=>{user=null;render();toast("Signed out. Your saves stay on this device.")});return}
+ if(t.id==="syncNow"){pull();return toast("Syncing\u2026")}
  if("edit" in ds)return editSheet();
  if("catdel" in ds)return delSheet();
  if(t.id==="delGo")return edApply(true);
@@ -1620,7 +1672,7 @@ let lt;
 document.addEventListener("input",e=>{if(e.target.id==="c-link"){clearTimeout(lt);lt=setTimeout(()=>{if(!draft)return;readDraft();if(!draft.link||draft.link===draft.linkDone)return;const n=applyLink(draft);draft.parsed=(draft.parsed||0)+n;drawCapture();const l=$("#c-link");if(l){l.focus();try{l.setSelectionRange(l.value.length,l.value.length)}catch(x){}}},700)}if(e.target.id==="c-place"&&draft){const a=ADDR.find(x=>x[0].toLowerCase()===e.target.value.trim().toLowerCase());if(a){draft.x=a[1];draft.y=a[2];movePin()}}if(e.target.id==="cmsg"&&e.target.closest(".hero-cap"))drawSug();if(e.target.id==="q"){q=e.target.value;runSearch()}});
 document.addEventListener("keydown",e=>{if(e.target.id==="homeSearch"&&e.key==="Enter"){q=e.target.value;go("search")}if(e.key==="Escape"){if(sv){sv=null;drawStory();render()}else closeSheet()}if(sv&&e.key==="ArrowRight")step(1);if(sv&&e.key==="ArrowLeft")step(-1)});
 $("#scrim").addEventListener("click",closeSheet);
-idbOpen().then(idbAll).then(()=>{S.items.forEach(i=>{if(i.img==="idb")i.img=IMG.get(i.id)||null});render()});
+idbOpen().then(idbAll).then(()=>{S.items.forEach(i=>{if(i.img==="idb")i.img=IMG.get(i.id)||null});resnap();render();initSync()});
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>
