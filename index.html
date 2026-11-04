@@ -768,6 +768,7 @@ textarea.in{min-height:72px;resize:vertical}
 .sync-pill{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:13px;color:var(--muted)}
 .sync-pill svg{width:16px;height:16px;color:#30a46c}
 .acct{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.fold-sug{margin:0 0 18px}
 .fp-h{margin:16px 0 6px;font-size:12.5px;font-weight:600;color:var(--muted)}
 .fprompts{display:flex;gap:6px;flex-wrap:wrap}
 .fwrap .in{background:var(--surface)}
@@ -937,10 +938,12 @@ const CATS=[
  {id:"ideas",name:"Ideas",icon:"lightbulb",c:"#d9a514"},
  {id:"home",name:"Home",icon:"sofa",c:"#4c9a5b"},
  {id:"events",name:"Events",icon:"calendar-heart",c:"#c2408f"},
- {id:"birthdays",name:"Birthdays",icon:"cake",c:"#ff9ec4"}];
+ {id:"birthdays",name:"Birthdays",icon:"cake",c:"#ff9ec4"},
+ {id:"lifeadmin",name:"Life admin",icon:"clipboard-list",c:"#93b5e1"},
+ {id:"subscriptions",name:"Subscriptions",icon:"repeat",c:"#f7a8a0"}];
 const catById=id=>CATS.find(c=>c.id===id);
 CATS.forEach((c,k)=>{c.k=k;c.n0=c.name});
-const BAL=["#12a594","#e5484d","#b0712b","#d6409f","#f76b15","#6e56cf","#3e63dd","#8e4ec6","#e54666","#0090ff","#f5a524","#30a46c","#ab4aba","#e93d82"];
+const BAL=["#12a594","#e5484d","#b0712b","#d6409f","#f76b15","#6e56cf","#3e63dd","#8e4ec6","#e54666","#0090ff","#f5a524","#30a46c","#ab4aba","#e93d82","#4f6d8f","#7c66dc"];
 const SORB=["#5fd3b0","#ff6b81","#ffa07a","#ff7eb6","#ffb347","#b39cff","#7f9cff","#c58be0","#ff8a8a","#6cc4f5","#ffd84d","#a8e07a","#f59ad3"];
 const IDEAS=[["Wine","wine"],["Travel","plane"],["Date night","heart"],["Kids activities","baby"],["Workouts","dumbbell"],["Podcasts","podcast"],["Music","music"],["Beauty","sparkles"],["Fashion","shirt"],["Quotes","quote"],["Wish list","star"],["Pets","paw-print"],["Garden","flower-2"],["Hikes","mountain"]];
 let ncCol=SORB[0];
@@ -982,6 +985,7 @@ function resnap(){SNAP.clear();S.items.forEach(i=>SNAP.set(i.id,ikey(i)));SNAPM=
 function stamp(){const now=Date.now();S.items.forEach(i=>{const k=ikey(i);if(SNAP.get(i.id)!==k){i.u=now;SNAP.set(i.id,k)}});const m=mkey();if(m!==SNAPM){S.mu=now;SNAPM=m}}
 function save(){stamp();writeLocal();schedulePush()}
 load();
+["lifeadmin","subscriptions"].forEach(id=>{S.seenCats=S.seenCats||[];if(!S.seenCats.includes(id)){S.active=[...new Set([...(S.active||[]),id])];S.seenCats.push(id)}});
 (S.customCats||[]).forEach(c=>{if(!catById(c.id))CATS.push({...c,c0:c.c})});
 S.active=[...new Set([...(S.active||[]),...(S.customCats||[]).map(c=>c.id)])];
 CATS.splice(0,CATS.length,...CATS.filter(c=>!(c.id.startsWith("c_")&&(S.hiddenCats||[]).includes(c.id))));
@@ -1112,6 +1116,8 @@ gifts:[T_("for","Who it's for","e.g. Mum"),S_("occasion","Occasion","Birthday|Ch
 people:[T_("how","How I know them","e.g. Tom's wife, works in nursing"),T_("met","Where we met","e.g. Mia's birthday"),D_("bday","Birthday"),A_("remember","Things to remember","e.g. Kids are Ava and Leo, loves black coffee")],
 ideas:[S_("kind","Type","Business|Project|Creative|Life"),T_("next","Next step","e.g. Price up a market stall")],
 home:[T_("room","Room","e.g. Hallway"),T_("spec","Size, colour or model","e.g. Warm white, low sheen"),T_("store","Where to buy",""),T_("price","Price","")],
+lifeadmin:[D_("date","Due or renewal date"),T_("who","Provider","e.g. AGL, NRMA, the dentist"),T_("amount","Amount","e.g. $120"),S_("often","How often","Once|Monthly|Quarterly|Yearly"),T_("ref","Account or reference number","Not passwords or card numbers"),T_("login","Login saved in","e.g. Apple Passwords"),S_("status","Status","To do|Done")],
+subscriptions:[D_("renew","Next renewal"),T_("price","Price","e.g. $16.99"),S_("often","Billed","Monthly|Yearly|Weekly"),S_("status","Status","Active|Free trial|Cancelled"),T_("paid","Paid with","e.g. Credit card, PayPal"),T_("login","Login saved in","e.g. Apple Passwords"),U_("cancel","Manage or cancel link","")],
 birthdays:[D_("date","Birthday"),T_("year","Year born","Optional, so you know how old they turn"),S_("rel","They are","Family|Friend|Work|Kids’ friend"),S_("remind","Remind me","On the day|1 day before|1 week before"),A_("gifts","Gift ideas","e.g. Loves candles, size M")],
 events:[D_("date","Date"),T_("time","Time","e.g. 5pm"),T_("where","Where","e.g. Parramatta Park"),T_("going","Who's going",""),U_("tickets","Tickets link","")]});
 const NAMEF={
@@ -1129,7 +1135,7 @@ fashion:[T_("brand","Brand",""),T_("size","Size",""),T_("price","Price",""),U_("
 pets:[T_("pet","Which pet","e.g. Milo"),S_("kind","Type","Vet|Food|Toy|Grooming|Walk spot"),T_("price","Price","")],
 garden:[S_("sun","Sun","Full sun|Part shade|Shade"),T_("spot","Where to plant",""),T_("store","Where to buy","")],
 hikes:[T_("where","Where","e.g. Blue Mountains"),T_("distance","Distance","e.g. 6 km return"),S_("level","Difficulty","Easy|Medium|Hard"),T_("best","Best time to go","")]};
-const TITLES={places:["Place name","e.g. Balmoral lookout"],restaurants:["Restaurant name","e.g. The dumpling place on Victoria Ave"],cafes:["Café name","e.g. Corner café with the green awning"],shopping:["What is it?","e.g. Vitamin C serum"],products:["Product","e.g. Cordless stick vacuum"],recipes:["Recipe name","e.g. Chicken laksa"],shows:["Title","e.g. The spy series Jess loves"],books:["Book title",""],gifts:["Gift idea","e.g. Fig scented candle"],people:["Their name","e.g. Sarah"],ideas:["The idea","e.g. Pressed flower bookmark stall"],home:["What is it?","e.g. Hallway paint colour"],events:["Event name","e.g. Night markets"],birthdays:["Whose birthday?","e.g. Mum, Sarah"],
+const TITLES={places:["Place name","e.g. Balmoral lookout"],restaurants:["Restaurant name","e.g. The dumpling place on Victoria Ave"],cafes:["Café name","e.g. Corner café with the green awning"],shopping:["What is it?","e.g. Vitamin C serum"],products:["Product","e.g. Cordless stick vacuum"],recipes:["Recipe name","e.g. Chicken laksa"],shows:["Title","e.g. The spy series Jess loves"],books:["Book title",""],gifts:["Gift idea","e.g. Fig scented candle"],people:["Their name","e.g. Sarah"],ideas:["The idea","e.g. Pressed flower bookmark stall"],home:["What is it?","e.g. Hallway paint colour"],events:["Event name","e.g. Night markets"],lifeadmin:["What is it?","e.g. Car rego, Electricity bill"],subscriptions:["Service","e.g. Netflix, Spotify, the gym"],birthdays:["Whose birthday?","e.g. Mum, Sarah"],
 quotes:["The quote","Type or paste the quote"],wine:["Wine name","e.g. 2021 Barossa Shiraz"],travel:["Where or what","e.g. Night market in Seoul"],"date night":["The idea","e.g. Rooftop bar with a view"],"kids activities":["Activity","e.g. Indoor play centre"],workouts:["Workout","e.g. 20 min pilates"],podcasts:["Podcast or episode",""],music:["Song","e.g. The song from the café"],beauty:["Product or treatment",""],fashion:["Item","e.g. Linen shirt"],"wish list":["What you want",""],pets:["What is it?","e.g. New vet, favourite treats"],garden:["Plant or idea","e.g. Lemon tree"],hikes:["Hike or trail",""]};
 const STORES={amazon:"Amazon",booktopia:"Booktopia",dymocks:"Dymocks",ebay:"eBay",etsy:"Etsy",mecca:"Mecca",sephora:"Sephora",jbhifi:"JB Hi-Fi",bigw:"Big W",kmart:"Kmart",target:"Target",myer:"Myer",davidjones:"David Jones",ikea:"IKEA",bunnings:"Bunnings",instagram:"Instagram",facebook:"Facebook",tiktok:"TikTok",youtube:"YouTube",netflix:"Netflix",stan:"Stan",goodreads:"Goodreads"};
 function readLink(u){try{const url=new URL(/^https?:/i.test(u)?u:"https://"+u);const host=url.hostname.replace(/^(www|m)\./,"");const key=host.split(".")[0];const store=STORES[key]||key.charAt(0).toUpperCase()+key.slice(1);
@@ -1146,12 +1152,12 @@ function applyLink(d){const r=readLink(d.link||"");if(!r)return 0;let n=0;d.f=d.
  else{if(has("source")&&!d.f.source&&r.store==="Instagram"){d.f.source="Reel";n++}if(!d.notes)d.notes="Saved from "+r.store}
  if(r.place&&!d.place){d.place=r.place;d.locOn=true;n++}
  d.linkRead=r.store;d.linkDone=d.link;return n}
-const TAGS={places:"Spots to visit",restaurants:"Places to eat",cafes:"Coffee and brunch spots",shopping:"Things to buy",recipes:"Meals to cook",products:"Things worth buying",shows:"What to watch next",books:"What to read next",gifts:"Ideas for me and others",people:"Names and little details",ideas:"Thoughts to come back to",home:"All things home",events:"Things on soon",birthdays:"Never miss a birthday",
+const TAGS={places:"Spots to visit",restaurants:"Places to eat",cafes:"Coffee and brunch spots",shopping:"Things to buy",recipes:"Meals to cook",products:"Things worth buying",shows:"What to watch next",books:"What to read next",gifts:"Ideas for me and others",people:"Names and little details",ideas:"Thoughts to come back to",home:"All things home",events:"Things on soon",birthdays:"Never miss a birthday",lifeadmin:"Bills, accounts and paperwork",subscriptions:"What you pay for regularly",
 quotes:"Words that stuck",wine:"Bottles to remember",travel:"Trips and places to go","date night":"Plans for two","kids activities":"Things to do with the kids",workouts:"Ways to move",podcasts:"Episodes to listen to",music:"Songs to find again",beauty:"Products to try",fashion:"Outfits and finds","wish list":"Things you want",pets:"For the furry ones",garden:"Plants and ideas",hikes:"Trails to walk"};
 function tagline(c){return TAGS[c.id]||TAGS[c.name.toLowerCase()]||"Your own list"}
 function catKey(cat){const c=catById(cat);return c?c.name.toLowerCase():""}
 const GENERIC=[T_("price","Price",""),T_("where","Where",""),T_("who","Who recommended it",""),U_("link","Link","")];
-const KEYF={birthdays:["date"],events:["date"],quotes:["author"]};
+const KEYF={birthdays:["date"],events:["date"],quotes:["author"],lifeadmin:["date"],subscriptions:["renew","price"]};
 function fieldsFor(cat){return FIELDS[cat]||NAMEF[catKey(cat)]||GENERIC}
 function facts(i){if(!i.cat||!i.f)return "";const F=fieldsFor(i.cat)||[];const out=[];F.forEach(([k,l,ty])=>{const v=i.f[k];if(!v||ty==="area"||ty==="url")return;out.push(ty==="date"?niceDate(v):v)});Object.keys(i.f).filter(k=>k.startsWith("x:")).forEach(k=>{if(i.f[k])out.push(i.f[k])});return out.slice(0,3).join(" · ")}
 function titleFor(cat){return cat?(TITLES[cat]||TITLES[catKey(cat)]||["What is it?",""]):["What is it?","e.g. Thai place on King St"]}
@@ -1181,7 +1187,7 @@ function answer(q){const stop=new Set("what was that the a an for to of my i is 
 function drawAsk(){openSheet(`<div class="sheet-h"><h2>Ask your saves</h2><button class="icon-btn" data-close aria-label="Close"><i data-lucide="x"></i></button></div><div class="ask-log">${askLog.length?askLog.map(m=>m.q?`<div class="msg out"><div class="bubble">${esc(m.q)}</div></div>`:`<div class="msg in"><div class="bubble">${m.a}</div></div>`).join(""):`<p class="note">Ask anything about what you've saved. Try one of these:</p>`}</div><div class="chips ask-chips" style="flex-wrap:wrap">${["What was that dumpling place?","Gift ideas for Mum","Places to go at sunset","What did Jess recommend?"].map(s=>`<button class="sg" data-askq="${esc(s)}">${esc(s)}</button>`).join("")}</div><form id="askForm" class="hc-row ask-row"><input id="askIn" placeholder="Ask your saves…" autocomplete="off"><button class="send" aria-label="Ask"><i data-lucide="arrow-up"></i></button></form><p class="note">Matches the words in your saves. Smarter answers are coming.</p>`);const l=$(".ask-log");if(l)l.scrollTop=l.scrollHeight}
 function tidyHTML(arr){const g={};arr.forEach(i=>{const c=i.sug||guess(i).cat;(g[c]=g[c]||[]).push(i)});return Object.entries(g).sort((a,b)=>b[1].length-a[1].length).slice(0,3).map(([c,a])=>`<div class="tidy"><i data-lucide="sparkles"></i><span class="grow"><b>${a.length} ${a.length>1?"saves look":"save looks"} like ${esc(catById(c).name)}</b><span>${a.map(i=>esc(i.title)).join(", ")}</span></span><button class="ib-go" data-tidy="${c}">Move ${a.length>1?"them":"it"}</button></div>`).join("")}
 function toggleQuick(){let q=$("#qw");if(q){q.remove();return}q=document.createElement("form");q.id="qw";q.className="qw";q.innerHTML=`<div class="qw-h"><b><i data-lucide="zap"></i>Quick save</b><button type="button" class="ig-ico" data-qwclose aria-label="Close"><i data-lucide="x"></i></button></div><div class="hc-row" style="padding:4px 6px 4px 12px"><input id="qwIn" placeholder="Type or paste, then Enter" autocomplete="off"><button class="send" aria-label="Save"><i data-lucide="arrow-up"></i></button></div><p class="note" style="margin:2px 14px 12px">Goes to your Inbox with a suggested category. Keep it open while you browse.</p>`;document.body.appendChild(q);icons();$("#qwIn").focus()}
-const SUBIDEAS={birthdays:["Family","Friends","Work"],shopping:["Skincare","Clothes","Homewares"],products:["Tech","Kitchen"],restaurants:["Thai","Italian","Date night"],cafes:["Brunch","Coffee"],recipes:["Dinner","Baking","Quick meals"],shows:["Series","Movies"],books:["Fiction","Non-fiction"],places:["Beaches","Walks","Lookouts"],gifts:["Mum","Birthdays","Christmas"],home:["Kitchen","Garden","Bedroom"],events:["Markets","Concerts"],people:["Work","Family"],ideas:["Business","Projects"]};
+const SUBIDEAS={lifeadmin:["Bills","Accounts","Car","Health","Home","Insurance","Documents","Warranties","Tax","Pets"],subscriptions:["Streaming","Apps","Memberships","News"],birthdays:["Family","Friends","Work"],shopping:["Skincare","Clothes","Homewares"],products:["Tech","Kitchen"],restaurants:["Thai","Italian","Date night"],cafes:["Brunch","Coffee"],recipes:["Dinner","Baking","Quick meals"],shows:["Series","Movies"],books:["Fiction","Non-fiction"],places:["Beaches","Walks","Lookouts"],gifts:["Mum","Birthdays","Christmas"],home:["Kitchen","Garden","Bedroom"],events:["Markets","Concerts"],people:["Work","Family"],ideas:["Business","Projects"]};
 function subPills(cat,val,pref){const used=[...new Set([...live().filter(i=>i.cat===cat&&i.sub).map(i=>i.sub),...((S.subs||{})[cat]||[])])];const all=[...new Set([...used,...(SUBIDEAS[cat]||[]),...(val?[val]:[])])];
  return `<label class="f">Subcategory <span class="note" style="font-weight:500">(optional)</span></label><div class="optpills" data-subfor="${pref}">${all.map(s=>`<button type="button" class="sg${val===s?" on":""}" data-subpick="${esc(s)}">${esc(s)}</button>`).join("")}<button type="button" class="sg ghost" data-subnew><i data-lucide="plus"></i>New</button></div><input class="in" id="${pref}sub" value="${esc(val||"")}" placeholder="Name your subcategory" style="margin-top:8px" hidden>`}
 function catPaths(id){const all=new Set();[...live().filter(i=>i.cat===id&&i.sub).map(i=>i.sub),...((S.subs||{})[id]||[])].forEach(p=>{const s=p.split(" › ");for(let k=1;k<=s.length;k++)all.add(s.slice(0,k).join(" › "))});return [...all].sort((a,b)=>a.localeCompare(b))}
@@ -1211,7 +1217,7 @@ function catView0(title,arr){const c=catById(ctx.cat),here=ctx.sub?ctx.sub.split
  const deep=byNew(live().filter(i=>i.cat===c.id&&(!ctx.sub||i.sub===ctx.sub||(i.sub||"").startsWith(ctx.sub+" › "))));
  return `<div class="cv-top m-only"><button class="back" data-go="${ctx.from||"home"}"><i data-lucide="chevron-left"></i>${ctx.from==="search"?"Search":"Home"}</button></div>
 <div class="cat-layout"><section style="min-width:0">
-${catHeader(c,title,here,inHere)}${ctx.cat==="birthdays"&&!ctx.sub?bdayBlock():ctx.cat==="events"&&!ctx.sub?eventsBlock():""}
+${catHeader(c,title,here,inHere)}${ctx.cat==="birthdays"&&!ctx.sub?bdayBlock():ctx.cat==="events"&&!ctx.sub?eventsBlock():(ctx.cat==="lifeadmin"||ctx.cat==="subscriptions")&&!ctx.sub?dueBlock(ctx.cat):""}${!ctx.sub?folderSug():""}
 ${ctx.kids.length||ctx.addingSub?folderGrid(title):""}
 ${ctx.cat==="birthdays"&&!ctx.sub?"":allSavesSec(c,here,deep)}
 </section></div>`}
@@ -1314,6 +1320,15 @@ async function pull(){if(!user||syncing)return;syncing=true;updSyncUI();try{cons
 function accountCard(){if(!sbReady())return "";
  if(user)return `<div class="set-card"><h3><i data-lucide="cloud"></i> Signed in and syncing</h3><p class="note" style="margin:0 0 10px">${esc(user.email||"")} · <span class="sync-state">${esc(syncText())}</span></p><div class="bk-row"><button class="btn" id="syncNow"><i data-lucide="refresh-cw"></i>Sync now</button><button class="link-btn" id="signOut">Sign out</button></div></div>`;
  return `<div class="set-card acct"><h3><i data-lucide="cloud"></i> Sign in to sync</h3><p class="note" style="margin:0 0 10px">See the same saves on your iPhone and Mac. Anything already saved on this device comes with you. No password needed: we email you a code.</p>${otpEmail?`<label class="f" for="otpIn">Enter the 6-digit code sent to ${esc(otpEmail)}</label><div class="rem-row"><input class="in" id="otpIn" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456"><button class="btn primary" id="otpGo" style="flex:none">Sign in</button></div><button class="link-btn" id="otpBack" style="margin-top:8px">Use a different email or send a new code</button>`:`<label class="f" for="emIn">Your email</label><div class="rem-row"><input class="in" id="emIn" type="email" autocomplete="email" placeholder="you@example.com"><button class="btn primary" id="emGo" style="flex:none">Email me a code</button></div>`}</div>`}
+function rateHTML(i){return `<div class="rate" aria-label="Rating">${[1,2,3,4,5].map(n=>`<button class="${i.rating>=n?"on":""}" data-rate="${n}" aria-label="${n} star${n>1?"s":""}">\u2605</button>`).join("")}</div>`}
+function nextDate(f){const v=f.renew||f.date;if(!v)return null;const [y,m,d]=v.split("-").map(Number);const n=new Date(y,m-1,d);if(isNaN(n))return null;const t=new Date();t.setHours(0,0,0,0);const fr=f.often||"";let g=0;
+ while(n<t&&g<800){g++;if(/Weekly/.test(fr))n.setDate(n.getDate()+7);else if(/Monthly/.test(fr))n.setMonth(n.getMonth()+1);else if(/Quarterly/.test(fr))n.setMonth(n.getMonth()+3);else if(/Yearly/.test(fr))n.setFullYear(n.getFullYear()+1);else break}return n}
+function dueBlock(cat){const t=new Date();t.setHours(0,0,0,0);const subs=cat==="subscriptions";
+ const up=live().filter(i=>i.cat===cat&&i.f&&(i.f.date||i.f.renew)&&i.f.status!=="Cancelled"&&i.f.status!=="Done").map(i=>{const n=nextDate(i.f);return n?{i,n,days:Math.round((n-t)/864e5)}:null}).filter(u=>u&&u.days>=0).sort((a,b)=>a.days-b.days);
+ let total="";if(subs){let m=0;live().filter(i=>i.cat===cat&&i.f&&i.f.status!=="Cancelled").forEach(i=>{const p=parseFloat(String(i.f.price||"").replace(/[^0-9.]/g,""));if(!p)return;const fr=i.f.often||"Monthly";m+=/Yearly/.test(fr)?p/12:/Weekly/.test(fr)?p*52/12:p});if(m)total=` <span class="note" style="font-weight:500">\u00b7 about $${m.toFixed(2)} a month</span>`}
+ return `<div class="bday"><div class="upc"><h3>${subs?"Renewing soon":"Due soon"}${total}</h3>${up.length?`<div class="ur-row">${up.map(u=>`<button class="ur" data-open="${u.i.id}"><span class="ud ev"><small>${u.n.toLocaleDateString("en-AU",{month:"short"})}</small>${u.n.getDate()}</span><span class="grow"><b>${esc(u.i.title)}</b><span>${u.days===0?"Today":u.days===1?"Tomorrow":"In "+u.days+" days"}${u.i.f.price?" \u00b7 "+esc(u.i.f.price):""}${u.i.f.amount?" \u00b7 "+esc(u.i.f.amount):""}</span></span></button>`).join("")}</div>`:`<p class="note" style="margin:4px">Add ${subs?"a renewal":"a due"} date and it shows here.</p>`}</div></div>`}
+function folderSug(){const have=new Set(ctx.kids||[]);const sug=(SUBIDEAS[ctx.cat]||[]).filter(n=>!have.has(n));if(!sug.length)return "";
+ return `<div class="fold-sug"><p class="fp-h" style="margin-top:0">Suggested folders</p><div class="fprompts">${sug.map(n=>`<button class="sg ghost" data-mkfolder="${esc(n)}"><i data-lucide="folder-plus"></i>${esc(n)}</button>`).join("")}</div></div>`}
 let sortDraft=null;
 function sortCard(id){const i=S.items.find(x=>x.id===id);sortDraft={id,cat:i.sug||guess(i).cat,sug:i.sug||guess(i).cat,f:{...(i.f||{})},sub:i.sub||"",notes:i.notes||""};drawSort()}
 function readSort(){const sd=sortDraft;const s=$("#s-sub");if(s)sd.sub=s.value;const n=$("#s-notes");if(n)sd.notes=n.value;document.querySelectorAll("#sheet [id^='s-f-'][data-fkey]").forEach(e=>sd.f[e.dataset.fkey]=e.value)}
@@ -1471,7 +1486,7 @@ function drawCapture(){const d=draft;const tt=titleFor(d.cat);const g=d.title&&!
 function readDraft(){draft.f=draft.f||{};document.querySelectorAll("#sheet [id^='c-f-'][data-fkey]").forEach(e=>draft.f[e.dataset.fkey]=e.value);const g=id=>{const e=document.getElementById(id);return e?e.value:undefined};
  ["title","notes","link","sub","place"].forEach(k=>{const v=g("c-"+k);if(v!==undefined)draft[k]=v});const c=g("c-coll");if(c!==undefined)draft.coll=c}
 function guess(d){const t=(d.title+" "+d.notes+" "+d.link).toLowerCase();
- const rules=[["birthdays",/birthday|bday|turns \d+/],["recipes",/recipe|cook|bake|ingredient|laksa|pasta|curry|reel/],["restaurants",/restaurant|dumpling|thai|sushi|ramen|pizza|burger|dinner|bar\b/],["cafes",/caf|coffee|brunch|bakery/],["shows",/show|movie|film|series|netflix|watch|episode/],["books",/book|novel|read/],["gifts",/gift|present|birthday|christmas/],["shopping",/serum|skin|shoe|dress|buy|shop|store/],["events",/event|market|festival|concert|ticket/],["places",/beach|park|lookout|walk|hike|place/],["home",/paint|lamp|sofa|garden|filter|bulb/],["people",/name is|met |friend/]];
+ const rules=[["subscriptions",/subscription|netflix|spotify|disney\+|membership|renews?\b/],["lifeadmin",/\bbill\b|invoice|rego|insurance|warranty|\btax\b|passport|licen[cs]e|renewal/],["birthdays",/birthday|bday|turns \d+/],["recipes",/recipe|cook|bake|ingredient|laksa|pasta|curry|reel/],["restaurants",/restaurant|dumpling|thai|sushi|ramen|pizza|burger|dinner|bar\b/],["cafes",/caf|coffee|brunch|bakery/],["shows",/show|movie|film|series|netflix|watch|episode/],["books",/book|novel|read/],["gifts",/gift|present|birthday|christmas/],["shopping",/serum|skin|shoe|dress|buy|shop|store/],["events",/event|market|festival|concert|ticket/],["places",/beach|park|lookout|walk|hike|place/],["home",/paint|lamp|sofa|garden|filter|bulb/],["people",/name is|met |friend/]];
  const hit=rules.find(r=>r[1].test(t));let title=d.title;
  if(!title&&d.link){try{title="Saved from "+new URL(d.link.startsWith("http")?d.link:"https://"+d.link).hostname.replace("www.","")}catch(e){title="Saved link"}}
  return {cat:hit?hit[0]:"ideas",title:title?title.charAt(0).toUpperCase()+title.slice(1):"Something to remember"}}
@@ -1498,7 +1513,7 @@ function detail(id){const i=S.items.find(x=>x.id===id);if(!i)return;const c=catO
  openSheet(`<div class="d-hero">${ph(i,220)}<button class="icon-btn d-x" data-close aria-label="Close"><i data-lucide="x"></i></button></div>
  <div class="d-crumb"><span class="chip-c" style="--c:${c.c}">${esc(c.name)}${i.sub?" › "+esc(i.sub):""}</span><span class="note" style="margin:0">Saved ${new Date(i.created).toLocaleDateString("en-AU",{day:"numeric",month:"short",year:"numeric"})}</span></div>
  <h2 class="d-title">${esc(i.title)}</h2>
- <div class="rate" aria-label="Rating">${[1,2,3,4,5].map(n=>`<button class="${i.rating>=n?"on":""}" data-rate="${n}" aria-label="${n} star${n>1?"s":""}">★</button>`).join("")}</div>
+ ${["birthdays","lifeadmin","subscriptions"].includes(i.cat)?"":rateHTML(i)}
  ${i.place?`<div class="kv"><i data-lucide="map-pin"></i>${esc(i.place)}</div>`:""}
  ${i.remind?`<div class="kv rem-kv"><i data-lucide="bell"></i>Reminder ${esc(fmtRem(i.remind))}<button class="link-btn" data-remind style="margin-left:auto">Change</button></div>`:(ed?"":`<button class="sg ghost" data-remind style="margin-top:10px"><i data-lucide="bell-plus"></i>Remind me</button>`)}
  ${ed?edit:view}
@@ -1531,6 +1546,7 @@ document.addEventListener("click",e=>{const t=e.target.closest("[data-fav],butto
  if(t.id==="otpBack"){otpEmail=null;return render()}
  if(t.id==="signOut"){sb.auth.signOut().then(()=>{user=null;render();toast("Signed out. Your saves stay on this device.")});return}
  if(t.id==="syncNow"){pull();return toast("Syncing\u2026")}
+ if(ds.mkfolder){S.subs=S.subs||{};const a=S.subs[ctx.cat]=S.subs[ctx.cat]||[];if(!a.includes(ds.mkfolder))a.push(ds.mkfolder);save();render();return toast(ds.mkfolder+" folder added \u2713")}
  if("edit" in ds)return editSheet();
  if("catdel" in ds)return delSheet();
  if(t.id==="delGo")return edApply(true);
