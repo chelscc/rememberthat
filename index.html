@@ -1085,8 +1085,7 @@ function greeting(){const n=new Date(),h=n.getHours(),wd=n.getDay();
   const P=h<5?["Still up","?"]:h<12?["Good morning",""]:h<17?["Good afternoon",""]:h<22?["Good evening",""]:["Night owl mode",""];const t=`${P[0]}, Chels${P[1]||"!"}`;
   const soon=live().filter(i=>i.cat==="birthdays"&&i.f&&i.f.date).map(i=>{const d=new Date(i.f.date+"T00:00");if(isNaN(d))return null;const nx=new Date(n.getFullYear(),d.getMonth(),d.getDate());const t0=new Date(n.getFullYear(),n.getMonth(),n.getDate());if(nx<t0)nx.setFullYear(nx.getFullYear()+1);return [i,Math.round((nx-t0)/864e5)]}).filter(x=>x&&x[1]<=7).sort((a,b)=>a[1]-b[1])[0];
   if(soon){const nm=soon[0].title.replace(/[’']s birthday$/i,"");return {t,p:P,b:1,l:soon[1]===0?`It’s ${nm}’s birthday today 🎂`:`${nm}’s birthday is ${soon[1]===1?"tomorrow":"in "+soon[1]+" days"} 🎂`}}
-  const pool=h<5||h>=22?["Save it now, sleep on it later.","Late-night find? Pop it in before you forget."]:wd===5?["Weekend plans brewing? Save the spots.","Friday finds go here."]:wd===0||wd===6?["Weekend wanderings welcome.","Spotted something good today?"]:h<12?["What’s worth remembering today?","Fresh day, fresh finds."]:["Saw something good? Pop it in.","Future Chels will thank you.","Your brain, but pinker.","Nothing forgotten on our watch."];
-  return {t,p:P,l:pool[n.getDate()%pool.length]}}
+  return {t,p:P,l:""}}
 
 function coverType(i){const cv=i.cover||{};if(cv.type&&cv.type!=="auto")return cv.type;if(i.place)return "map";if(i.cat&&catKey(i.cat)==="quotes")return "text";return "icon"}
 function niceDate(v){try{const d=new Date(v+"T00:00");return isNaN(d)?v:d.toLocaleDateString("en-AU",{day:"numeric",month:"long"})}catch(e){return v}}
