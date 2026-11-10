@@ -900,6 +900,46 @@ textarea.in{min-height:72px;resize:vertical}
   .toast{bottom:32px}
 }
 @media (min-width:600px) and (max-width:899px){.grid{columns:3}.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* ===== Design pass, 10 Nov ===== */
+/* sentence case: no tracked capitals anywhere */
+.eyebrow,.step-l,.fset-h,.fact small,.dlong small,.side-label,.tree-h,.cw,.ud small,.cov-bday small,.proto,.remember small,.sample{text-transform:none!important;letter-spacing:0!important}
+.eyebrow{font-size:14px;font-weight:500;margin-bottom:2px}
+.step-l{font-size:13.5px;font-weight:600;color:var(--ink)}
+.fact small,.dlong small{font-size:12px;font-weight:500}
+.side-label{font-size:12.5px;font-weight:600}
+/* category tiles: quieter counts */
+.bt-n{background:none!important;padding:0!important;font-size:13px;font-weight:600;color:color-mix(in srgb,var(--c) 35%,var(--muted))!important}
+.bt b{font-size:15.5px}
+/* capture: coloured dot on category choices */
+.dot-chip{display:inline-flex;align-items:center;gap:7px}
+.dot-chip::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.dot-chip[aria-pressed="true"]::before{background:#fff}
+/* item page */
+.d-title{font-size:24px;line-height:1.2;letter-spacing:-.015em;margin:8px 0 6px}
+.d-crumb .chip-c{font-weight:600}
+.hero-cap:focus-within{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 12%,transparent),0 16px 40px -18px color-mix(in srgb,var(--accent) 45%,transparent)}
+@media(max-width:600px){
+ /* compact category rows on phone: icon, name, count */
+ .bento{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
+ .bt{min-height:0!important;flex-direction:row!important;align-items:center;gap:10px;padding:10px!important;border-radius:16px}
+ .bt .bt-top{order:0;flex:none}
+ .bt .bt-top .bt-n{display:none}
+ .bt-ic{width:34px;height:34px;border-radius:10px}
+ .bt-ic svg{width:17px;height:17px}
+ .bt b{padding:0!important;margin:0!important;font-size:14.5px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .bt .bt-last{display:none}
+ .bt-add .bt-add-ic{width:34px;height:34px}
+ .home-h{margin-top:14px}
+ /* item page footer fits: secondary actions become icons */
+ .sheet-foot{gap:8px}
+ .sheet-foot .btn:not(.primary){flex:0 0 auto;width:46px;padding:0;font-size:0;gap:0;justify-content:center}
+ .sheet-foot .btn:not(.primary) svg{width:19px;height:19px}
+ .sheet-foot .btn.primary{flex:1}
+ .sheet-foot #saveInbox,.sheet-foot [data-close].btn{width:auto;flex:1;font-size:14px;gap:7px;padding:0 12px}
+}
+.sidebar .side-cats .side-btn .d{background:var(--c)!important;opacity:1!important;filter:none!important;border:0!important;width:10px;height:10px;border-radius:50%;box-shadow:none}
+@media(max-width:600px){.home-h{display:none}}
 </style>
 
 </head>
@@ -1328,7 +1368,7 @@ function dueBlock(cat){const t=new Date();t.setHours(0,0,0,0);const subs=cat==="
  let total="";if(subs){let m=0;live().filter(i=>i.cat===cat&&i.f&&i.f.status!=="Cancelled").forEach(i=>{const p=parseFloat(String(i.f.price||"").replace(/[^0-9.]/g,""));if(!p)return;const fr=i.f.often||"Monthly";m+=/Yearly/.test(fr)?p/12:/Weekly/.test(fr)?p*52/12:p});if(m)total=` <span class="note" style="font-weight:500">\u00b7 about $${m.toFixed(2)} a month</span>`}
  return `<div class="bday"><div class="upc"><h3>${subs?"Renewing soon":"Due soon"}${total}</h3>${up.length?`<div class="ur-row">${up.map(u=>`<button class="ur" data-open="${u.i.id}"><span class="ud ev"><small>${u.n.toLocaleDateString("en-AU",{month:"short"})}</small>${u.n.getDate()}</span><span class="grow"><b>${esc(u.i.title)}</b><span>${u.days===0?"Today":u.days===1?"Tomorrow":"In "+u.days+" days"}${u.i.f.price?" \u00b7 "+esc(u.i.f.price):""}${u.i.f.amount?" \u00b7 "+esc(u.i.f.amount):""}</span></span></button>`).join("")}</div>`:`<p class="note" style="margin:4px">Add ${subs?"a renewal":"a due"} date and it shows here.</p>`}</div></div>`}
 function folderSug(){const have=new Set(ctx.kids||[]);const sug=(SUBIDEAS[ctx.cat]||[]).filter(n=>!have.has(n));if(!sug.length)return "";
- return `<div class="fold-sug"><p class="fp-h" style="margin-top:0">Suggested folders</p><div class="fprompts">${sug.map(n=>`<button class="sg ghost" data-mkfolder="${esc(n)}"><i data-lucide="folder-plus"></i>${esc(n)}</button>`).join("")}</div></div>`}
+ return `<div class="fold-sug"><p class="fp-h" style="margin-top:0">Add a folder</p><div class="fprompts">${sug.map(n=>`<button class="sg ghost" data-mkfolder="${esc(n)}"><i data-lucide="folder-plus"></i>${esc(n)}</button>`).join("")}</div></div>`}
 let sortDraft=null;
 function sortCard(id){const i=S.items.find(x=>x.id===id);sortDraft={id,cat:i.sug||guess(i).cat,sug:i.sug||guess(i).cat,f:{...(i.f||{})},sub:i.sub||"",notes:i.notes||""};drawSort()}
 function readSort(){const sd=sortDraft;const s=$("#s-sub");if(s)sd.sub=s.value;const n=$("#s-notes");if(n)sd.notes=n.value;document.querySelectorAll("#sheet [id^='s-f-'][data-fkey]").forEach(e=>sd.f[e.dataset.fkey]=e.value)}
@@ -1352,12 +1392,12 @@ function cleanHome2(g,it,inbox){const tab=S.homeTab||"cats";const part=g.t.split
  const wk=it.filter(i=>now-i.created<7*day).length,places=it.filter(i=>i.place).length;
  const cs=CATS.map(c=>({c,a:byNew(it.filter(i=>i.cat===c.id))}));
  const used=cs.filter(x=>x.a.length||(S.active||[]).includes(x.c.id)).sort((a,b)=>a.c.name.localeCompare(b.c.name)),empty=cs.filter(x=>!x.a.length&&!(S.active||[]).includes(x.c.id)).sort((a,b)=>a.c.name.localeCompare(b.c.name));
- const tile=(x,k)=>{const big=false;return `<button class="bt${big?" big":""}" style="--c:${x.c.c}" data-cat="${x.c.id}"><span class="bt-top"><span class="bt-ic"><i data-lucide="${x.c.icon}"></i></span><span class="bt-n">${x.a.length}</span></span>${big?`<span class="bt-thumbs">${x.a.slice(0,4).map(i=>`<span class="ph" style="--c:${x.c.c}">${i.img?`<img src="${i.img}" alt="">`:`<i data-lucide="${x.c.icon}"></i>`}</span>`).join("")}</span>`:""}<b>${x.c.name}</b><span class="bt-last">${esc(tagline(x.c))}</span></button>`};
+ const tile=(x,k)=>{const big=false;return `<button class="bt${big?" big":""}" style="--c:${x.c.c}" data-cat="${x.c.id}"><span class="bt-top"><span class="bt-ic"><i data-lucide="${x.c.icon}"></i></span>${x.a.length?`<span class="bt-n">${x.a.length}</span>`:""}</span>${big?`<span class="bt-thumbs">${x.a.slice(0,4).map(i=>`<span class="ph" style="--c:${x.c.c}">${i.img?`<img src="${i.img}" alt="">`:`<i data-lucide="${x.c.icon}"></i>`}</span>`).join("")}</span>`:""}<b>${x.c.name}</b><span class="bt-last">${esc(tagline(x.c))}</span></button>`};
  const seg=`<div class="seg mini-seg"><button class="m-only" data-go="collections">Collections</button><button data-htab="cats" aria-pressed="${tab==="cats"}">Categories</button><button data-htab="all" aria-pressed="${tab==="all"}">All saves</button></div>`;
  return `<div class="cl-top" style="align-items:flex-start"><div class="grow"><p class="eyebrow">${new Date().toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"})}</p><h1 class="cl-h2">${part}, <em>Chels</em></h1></div><button class="cta" data-capture><i data-lucide="plus"></i>Capture</button>${inbox.length?`<button class="icon-btn inb-m" data-cat="__inbox" aria-label="Inbox, ${inbox.length} to sort"><i data-lucide="inbox"></i><em class="nb">${inbox.length}</em></button>`:""}<button class="ask-btn" data-ask><i data-lucide="sparkles"></i>Ask</button><button class="icon-btn" data-go="search" aria-label="Search"><i data-lucide="search"></i></button><button class="icon-btn" data-go="settings" aria-label="Settings"><i data-lucide="settings"></i></button></div>
 <form class="hero-cap" id="composer" data-thread=""><div class="hc-row"><input id="cmsg" placeholder="What do you want to remember?" autocomplete="off"><button class="send" aria-label="Save"><i data-lucide="arrow-up"></i></button></div><div class="hc-sug" id="hcSug" hidden></div><div class="hc-types"><button type="button" data-qc="link"><i data-lucide="link"></i>Link</button><button type="button" data-qc="photo"><i data-lucide="image"></i>Photo</button><button type="button" data-qc="place"><i data-lucide="map-pin"></i>Place</button><button type="button" data-qc="voice"><i data-lucide="mic"></i>Voice</button><span class="priv-pill"><i data-lucide="lock"></i>Private to you</span></div></form>${seg.replace("seg mini-seg","seg mini-seg m-seg m-only")}
 
-${tab==="cats"?`<div class="home-h"><h2>Your categories</h2><span class="d-only">${seg}</span></div><div class="bento">${used.map(tile).join("")}<button class="bt bt-add" data-newcat><span class="bt-add-ic"><i data-lucide="plus"></i></span><b>New category</b></button></div><div class="bt-empty d-only"><p>Start something new</p><div>${empty.map(x=>`<button data-activate="${x.c.id}"><i data-lucide="${x.c.icon}"></i>${x.c.name}</button>`).join("")}${IDEAS.filter(d=>!CATS.some(c=>c.name.toLowerCase()===d[0].toLowerCase())).slice(0,moreIdeas?99:6).map(d=>`<button data-idea="${d[0]}"><i data-lucide="${d[1]}"></i>${d[0]}</button>`).join("")}${moreIdeas?"":`<button data-moreideas>More ideas…</button>`}</div></div>`:`<div class="home-h"><h2>All saves</h2><span class="d-only">${seg}</span></div><div class="section-h" style="margin-top:0"><span class="note">${it.length} saves</span><span class="sh-r"><button class="link-btn" data-selmode>${sel?"Cancel":"Select"}</button>${layoutSeg()}</span></div>${cards(byNew(it))}`}`}
+${tab==="cats"?`<div class="home-h"><h2 class="d-only">Your categories</h2><span class="d-only">${seg}</span></div><div class="bento">${used.map(tile).join("")}<button class="bt bt-add" data-newcat><span class="bt-add-ic"><i data-lucide="plus"></i></span><b>New category</b></button></div><div class="bt-empty d-only"><p>Start something new</p><div>${empty.map(x=>`<button data-activate="${x.c.id}"><i data-lucide="${x.c.icon}"></i>${x.c.name}</button>`).join("")}${IDEAS.filter(d=>!CATS.some(c=>c.name.toLowerCase()===d[0].toLowerCase())).slice(0,moreIdeas?99:6).map(d=>`<button data-idea="${d[0]}"><i data-lucide="${d[1]}"></i>${d[0]}</button>`).join("")}${moreIdeas?"":`<button data-moreideas>More ideas…</button>`}</div></div>`:`<div class="home-h"><h2>All saves</h2><span class="d-only">${seg}</span></div><div class="section-h" style="margin-top:0"><span class="note">${it.length} saves</span><span class="sh-r"><button class="link-btn" data-selmode>${sel?"Cancel":"Select"}</button>${layoutSeg()}</span></div>${cards(byNew(it))}`}`}
 const V={
 home(){const g=greeting(),it=live(),inbox=it.filter(i=>!i.cat);
  const month=it.filter(i=>now-i.created<30*day).length;
@@ -1460,7 +1500,7 @@ let draft;
 function capture(t){draft={type:t||"note",title:"",link:"",notes:"",img:null,cat:null,sub:"",place:"",locOn:false,coll:"",ai:null,f:{},x:50,y:45};if(view==="list"&&ctx){if(ctx.cat&&ctx.cat!=="__inbox"){draft.cat=ctx.cat;draft.sub=ctx.sub||""}if(ctx.coll)draft.coll=ctx.coll}if(t==="place"){draft.type="note";draft.locOn=true;draft.placeFirst=true}drawCapture()}
 function drawCapture(){const d=draft;const tt=titleFor(d.cat);const g=d.title&&!d.cat?guess(d).cat:null;
  const showLink=d.type==="link"||!!d.link,showPhoto=d.type==="photo"||!!d.img,cn=d.cat?catById(d.cat):null;
- const chip=(c,star)=>`<button class="fchip" style="--c:${c.c}" data-ccat="${c.id}" aria-pressed="${d.cat===c.id}">${star?"✨ ":""}${esc(c.name)}</button>`;
+ const chip=(c,star)=>`<button class="fchip dot-chip" style="--c:${c.c}" data-ccat="${c.id}" aria-pressed="${d.cat===c.id}">${star?"✨ ":""}${esc(c.name)}</button>`;
  const ex=(d.cat&&!d.sub&&!d.subOpen?`<button type="button" class="sg ghost" data-subopen><i data-lucide="folder"></i>Folder</button>`:"")+(d.coll||d.collOpen?"":`<button type="button" class="sg ghost" data-colladd><i data-lucide="folder-heart"></i>Collection</button>`)+(d.coverOpen||d.img?"":`<button type="button" class="sg ghost" data-coveradd><i data-lucide="image"></i>Cover</button>`);
  openSheet(`<div class="sheet-h"><h2>${d.placeFirst?"Save a place":cn?"New in "+esc(cn.name):"Remember that…"}</h2><button class="icon-btn" data-close aria-label="Close"><i data-lucide="x"></i></button></div>
  ${d.parsed?`<div class="parsed"><i data-lucide="sparkles"></i>Filled in ${d.parsed} detail${d.parsed>1?"s":""} for you</div>`:""}

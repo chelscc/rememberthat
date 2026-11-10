@@ -1,7 +1,7 @@
 // Remember That: offline support.
 // Pages load fresh from the network when online (so updates show straight away),
 // and fall back to the saved copy when offline.
-const CACHE = "rt-v1-2";
+const CACHE = "rt-v1-3";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png", "./lucide.min.js", "./supabase.js"];
 
 self.addEventListener("install", e => {
