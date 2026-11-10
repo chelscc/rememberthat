@@ -20,7 +20,7 @@
 /* Layout: phone = stacked feed + bottom tab bar with centre capture; desktop = sidebar + wide masonry grid */
 :root{
   --bg:#fdf6f8; --surface:#ffffff; --surface-2:#f8ecf1; --ink:#2b1c24; --muted:#7b6670; --line:#efdde5;
-  --accent:#b84d71; --on-accent:#ffffff;
+  --accent:#c4577a; --on-accent:#ffffff;
   --font-display:"Instrument Sans",system-ui,-apple-system,sans-serif;
   --font-body:"Instrument Sans",system-ui,-apple-system,sans-serif;
   --r-lg:22px; --r-md:16px; --r-sm:12px;
@@ -32,7 +32,7 @@
   --bg:#181015; --surface:#231920; --surface-2:#2d2028; --ink:#f8e9ef; --muted:#b89fab; --line:#3a2b33;
   --shadow:0 6px 24px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-accent="everyone"]{--accent:#2f6bd8;--on-accent:#fff;--bg:#ffffff;--surface:#ffffff;--surface-2:#f2f4f7;--line:#e4e7ec;--ink:#1a1d23;--muted:#667085}
-:root[data-accent="white"]{--accent:#b84d71;--on-accent:#fff;--bg:#ffffff;--surface:#ffffff;--surface-2:#f4f3f4;--line:#e9e7e9;--ink:#1e1a1c;--muted:#6f686c}
+:root[data-accent="white"]{--accent:#c4577a;--on-accent:#fff;--bg:#ffffff;--surface:#ffffff;--surface-2:#f4f3f4;--line:#e9e7e9;--ink:#1e1a1c;--muted:#6f686c}
 :root[data-accent="sage"]{--accent:#d0668a;--on-accent:#fff;--bg:#f3f6f1;--surface-2:#e8efe5;--line:#dbe5d6;--ink:#22302a;--muted:#66756c}
 :root[data-accent="peach"]{--accent:#ee7a6a;--on-accent:#fff;--bg:#fff6f0;--surface-2:#fdeadf;--line:#f5dccd;--ink:#3a2420;--muted:#86685f}
 :root[data-accent="lilac"]{--accent:#c165b9;--on-accent:#fff;--bg:#f7f4fc;--surface-2:#eee8f8;--line:#e2daf0;--ink:#2a2236;--muted:#776c88}
@@ -192,7 +192,7 @@ textarea.in{min-height:72px;resize:vertical}
 
 /* settings */
 .set-card{background:var(--surface);border-radius:var(--r-md);padding:14px;margin-top:12px;border:1px solid var(--line)}
-.set-card h3{font-size:16px;margin-bottom:8px}
+.set-card h3,.set-card h2{font-size:16px;margin:0 0 8px}
 .shades{display:flex;gap:10px;flex-wrap:wrap}
 .shade{display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:800;font-size:12.5px}
 .shade i{width:52px;height:52px;border-radius:16px;display:block;border:3px solid transparent;box-shadow:inset 0 0 0 1px var(--line)}
@@ -953,6 +953,12 @@ textarea.in{min-height:72px;resize:vertical}
  .cv-uniform .grid .facts{color:var(--muted)!important}
  .bt b{white-space:normal!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.2}
 }
+
+/* accessibility fixes */
+.bt .bt-last{color:color-mix(in srgb,var(--ink) 70%,transparent)!important}
+.bt .bt-n{color:color-mix(in srgb,var(--ink) 68%,transparent)!important}
+.cv-uniform .grid .card .body{background:linear-gradient(transparent,rgba(0,0,0,.72))}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 
 </head>
@@ -971,7 +977,7 @@ textarea.in{min-height:72px;resize:vertical}
 </nav>
 
 <div class="scrim" id="scrim"></div>
-<section class="sheet" id="sheet" role="dialog" aria-modal="true"></section>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Details" aria-hidden="true" inert></section>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -1075,12 +1081,12 @@ const byNew=a=>[...a].sort((x,y)=>y.created-x.created);
 
 function topbar(title,sub){return `<div class="top"><div class="hello">${title}${sub?`<p>${sub}</p>`:""}</div><button class="cta" data-capture><i data-lucide="plus"></i>Capture</button><button class="icon-btn m-only" data-go="settings" aria-label="Settings"><i data-lucide="settings"></i></button></div>`}
 
-function pinHome(g,it,inbox){return `<div class="pin-top"><div class="brand-m"><i data-lucide="message-circle-heart"></i></div><label class="searchbar" style="flex:1;margin:0;min-width:0"><span class="ico"><i data-lucide="search"></i></span><input id="homeSearch" placeholder="Search your saves" autocomplete="off"></label><button class="cta" data-capture><i data-lucide="plus"></i>Capture</button><button class="icon-btn m-only" data-go="settings" aria-label="Settings"><i data-lucide="settings"></i></button></div>
+function pinHome(g,it,inbox){return `<div class="pin-top"><div class="brand-m"><i data-lucide="message-circle-heart"></i></div><label class="searchbar" style="flex:1;margin:0;min-width:0"><span class="ico"><i data-lucide="search"></i></span><input id="homeSearch" aria-label="Search your saves" placeholder="Search your saves" autocomplete="off"></label><button class="cta" data-capture><i data-lucide="plus"></i>Capture</button><button class="icon-btn m-only" data-go="settings" aria-label="Settings"><i data-lucide="settings"></i></button></div>
 <p class="pin-hello"><b>${g.t}</b> ${g.l}</p>
 <div class="chips pin-chips"><button class="fchip pin-on" aria-pressed="true">All</button>${inbox.length?`<button class="fchip" data-cat="__inbox">Inbox · ${inbox.length}</button>`:""}${CATS.map(c=>`<button class="fchip" data-cat="${c.id}">${c.name}</button>`).join("")}</div>
 <div class="grid pin-grid">${byNew(it).map(card).join("")}</div>`}
 function googleHome(g,it,inbox,pick){const rec=byNew(it).slice(0,8);
- return `<div class="g-top"><label class="g-search"><i data-lucide="search"></i><input id="homeSearch" placeholder="Search your saves" autocomplete="off"><button class="avatar" data-go="settings" aria-label="Settings">C</button></label><button class="cta" data-capture><i data-lucide="plus"></i>Capture</button></div>
+ return `<div class="g-top"><label class="g-search"><i data-lucide="search"></i><input id="homeSearch" aria-label="Search your saves" placeholder="Search your saves" autocomplete="off"><button class="avatar" data-go="settings" aria-label="Settings">C</button></label><button class="cta" data-capture><i data-lucide="plus"></i>Capture</button></div>
 <h1 class="g-hello">${g.t}</h1><p class="g-sub">${g.l}</p>
 <div class="qc">${[["note","sticky-note","Note"],["link","link","Link"],["photo","camera","Photo"],["voice","mic","Voice"]].map(x=>`<button data-qc="${x[0]}"><i data-lucide="${x[1]}"></i>${x[2]}</button>`).join("")}</div>
 ${inbox.length?`<div class="g-card"><span class="circ" style="--c:#9a8a92"><i data-lucide="inbox"></i></span><div class="grow"><b>${inbox.length} in your Inbox</b><span>Give them a home so they're easy to find</span></div><button class="g-btn" data-cat="__inbox">Sort</button></div>`:""}
@@ -1092,10 +1098,10 @@ ${pick?`<div class="g-card" data-open="${pick.id}" role="button" tabindex="0"><s
 function when(ts){const d=Math.floor((now-ts)/day);if(d<1)return new Date(ts).toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit"});if(d<2)return "Yesterday";if(d<7)return new Date(ts).toLocaleDateString("en-AU",{weekday:"short"});return new Date(ts).toLocaleDateString("en-AU",{day:"numeric",month:"short"})}
 function dayLabel(ts){const d=Math.floor((now-ts)/day);return d<1?"Today":d<2?"Yesterday":new Date(ts).toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"short"})}
 function host(u){try{return new URL(u).hostname.replace("www.","")}catch(e){return u}}
-function composer(cat){return `<form class="composer" id="composer" data-thread="${cat||""}"><button type="button" class="cbtn" data-qc="photo" aria-label="Add photo"><i data-lucide="camera"></i></button><input id="cmsg" placeholder="Text yourself something to remember…" autocomplete="off"><button class="send" aria-label="Save"><i data-lucide="arrow-up"></i></button></form>`}
+function composer(cat){return `<form class="composer" id="composer" data-thread="${cat||""}"><button type="button" class="cbtn" data-qc="photo" aria-label="Add photo"><i data-lucide="camera"></i></button><input id="cmsg" aria-label="What do you want to remember?" placeholder="Text yourself something to remember…" autocomplete="off"><button class="send" aria-label="Save"><i data-lucide="arrow-up"></i></button></form>`}
 function chatHome(g,it,inbox){const rows=[{...NONE,id:"__inbox",items:inbox},...CATS.map(c=>({...c,items:it.filter(i=>i.cat===c.id)}))].filter(r=>r.items.length).map(r=>({...r,last:byNew(r.items)[0]})).sort((a,b)=>b.last.created-a.last.created);
  return `<div class="ch-top"><div><h1 class="ch-title">Chats</h1><p class="g-sub" style="margin:2px 0 0">${g.t} ${g.l}</p></div><button class="cta" data-capture><i data-lucide="plus"></i>Capture</button><button class="icon-btn m-only" data-go="settings" aria-label="Settings"><i data-lucide="settings"></i></button></div>
-<label class="searchbar"><span class="ico"><i data-lucide="search"></i></span><input id="homeSearch" placeholder="Search your saves" autocomplete="off"></label>
+<label class="searchbar"><span class="ico"><i data-lucide="search"></i></span><input id="homeSearch" aria-label="Search your saves" placeholder="Search your saves" autocomplete="off"></label>
 <div class="chats">${rows.map(r=>{const fresh=r.items.filter(i=>now-i.created<7*day).length;return `<button class="chat-row" data-cat="${r.id}"><span class="circ" style="--c:${r.c}"><i data-lucide="${r.icon}"></i></span><span class="grow"><span class="r1"><b>${esc(r.name)}</b><time>${when(r.last.created)}</time></span><span class="r2"><span class="pv">${r.id==="__inbox"?"Needs sorting: ":""}${esc(r.last.title)}</span>${fresh?`<span class="badge">${fresh}</span>`:""}</span></span></button>`}).join("")}</div>
 <p class="stat" style="text-align:center">Categories show up here once you save something to them.</p>${composer()}`}
 function chatThread(title,arr,cat){const c=cat==="__inbox"?NONE:cat?catById(cat):{icon:"folder-heart",c:"#c4577a"};let last="",out="";
@@ -1132,7 +1138,7 @@ function ueHome(g,it,inbox,pick){const f=S.ueF||"all";let base=it;if(f==="week")
  const pd=pick?Math.round((now-pick.created)/day):0;
  return `<div class="ue-top"><button class="ue-loc" data-go="map"><small>Saved around</small><b>Sydney <i data-lucide="chevron-down"></i></b></button><button class="cta" data-capture><i data-lucide="plus"></i>Capture</button><button class="ig-ico" data-go="settings" aria-label="Settings"><i data-lucide="settings"></i></button></div>
 <p class="g-sub" style="margin:-6px 0 12px">${g.t} ${g.l}</p>
-<label class="ue-search"><i data-lucide="search"></i><input id="homeSearch" placeholder="Search saves, places, recipes" autocomplete="off"></label>
+<label class="ue-search"><i data-lucide="search"></i><input id="homeSearch" aria-label="Search your saves" placeholder="Search saves, places, recipes" autocomplete="off"></label>
 <div class="ue-cats">${CATS.map(c=>`<button data-cat="${c.id}"><span class="circ" style="--c:${c.c}"><i data-lucide="${c.icon}"></i></span><span>${esc(c.name.replace(" & Movies",""))}</span></button>`).join("")}</div>
 ${pick?`<button class="ue-promo" data-open="${pick.id}" style="--c:${catOf(pick).c}"><span><small>Remember this?</small><b>${esc(pick.title)}</b><em>Saved ${pd<1?"today":pd+" days ago"}</em><span class="ue-go">Take a look</span></span><span class="ue-promo-art"><i data-lucide="${catOf(pick).icon}"></i></span></button>`:""}
 <div class="ue-filters">${[["all","All"],["week","This week"],["rated","Rated 4+"],["places","Has a location"]].map(x=>`<button data-uef="${x[0]}" aria-pressed="${f===x[0]}">${x[1]}</button>`).join("")}${inbox.length?`<button data-cat="__inbox">Inbox · ${inbox.length}</button>`:""}</div>
@@ -1140,7 +1146,7 @@ ${secs.map(s=>`<div class="ue-sh"><h2>${s.t}</h2><button class="ue-arrow" data-c
 <div class="ue-sh"><h2>All saves</h2></div>${base.length?`<div class="ue-list">${byNew(base).map(i=>ueCard(i,true)).join("")}</div>`:`<div class="empty"><b>Nothing matches that filter</b>Try another one.</div>`}`}
 function cleanHome(g,it,inbox){const tab=S.homeTab||"cats";
  return `<div class="cl-top"><div class="grow"><h1 class="cl-h">${g.t}</h1></div><button class="cta" data-capture><i data-lucide="plus"></i>Capture</button><button class="icon-btn m-only" data-go="settings" aria-label="Settings"><i data-lucide="settings"></i></button></div>
-<label class="searchbar"><span class="ico"><i data-lucide="search"></i></span><input id="homeSearch" placeholder="Search" autocomplete="off"></label>
+<label class="searchbar"><span class="ico"><i data-lucide="search"></i></span><input id="homeSearch" aria-label="Search your saves" placeholder="Search" autocomplete="off"></label>
 <div class="seg cl-seg"><button data-htab="cats" aria-pressed="${tab==="cats"}">Categories</button><button data-htab="all" aria-pressed="${tab==="all"}">All saves</button></div>
 ${tab==="cats"?`${inbox.length?`<button class="cl-row cl-inbox" data-cat="__inbox"><span class="cl-ic"><i data-lucide="inbox"></i></span><span class="grow">Inbox</span><span class="pill">${inbox.length}</span><i data-lucide="chevron-right" class="chev"></i></button>`:""}<div class="tiles">${CATS.map(c=>`<button class="tile" style="--c:${c.c}" data-cat="${c.id}"><span class="dot"><i data-lucide="${c.icon}"></i></span><b>${c.name}</b><small>${it.filter(i=>i.cat===c.id).length} saved</small></button>`).join("")}</div>`:`<div class="section-h" style="margin-top:4px"><span class="note">${it.length} saves</span>${layoutSeg()}</div>${cards(byNew(it))}`}`}
 const FIELDS={restaurants:[["cuisine","Cuisine","text","e.g. Thai, Italian"],["price","Price level","select","$|$$|$$$|$$$$"],["status","Status","select","Want to try|Been"],["dish","Dish to order","text","e.g. Pork soup dumplings"]],
@@ -1371,8 +1377,8 @@ async function pull(){if(!user||syncing)return;syncing=true;updSyncUI();try{cons
  if(data&&data.state)merge(data.state);await fetchImgs();writeLocal();resnap();syncErr=null}catch(e){syncErr=(e&&e.message)||"couldn’t reach the server"}finally{syncing=false}
  render();push()}
 function accountCard(){if(!sbReady())return "";
- if(user)return `<div class="set-card"><h3><i data-lucide="cloud"></i> Signed in and syncing</h3><p class="note" style="margin:0 0 10px">${esc(user.email||"")} · <span class="sync-state">${esc(syncText())}</span></p><div class="bk-row"><button class="btn" id="syncNow"><i data-lucide="refresh-cw"></i>Sync now</button><button class="link-btn" id="signOut">Sign out</button></div></div>`;
- return `<div class="set-card acct"><h3><i data-lucide="cloud"></i> Sign in to sync</h3><p class="note" style="margin:0 0 10px">See the same saves on your iPhone and Mac. Anything already saved on this device comes with you. No password needed: we email you a code.</p>${otpEmail?`<label class="f" for="otpIn">Enter the 6-digit code sent to ${esc(otpEmail)}</label><div class="rem-row"><input class="in" id="otpIn" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456"><button class="btn primary" id="otpGo" style="flex:none">Sign in</button></div><button class="link-btn" id="otpBack" style="margin-top:8px">Use a different email or send a new code</button>`:`<label class="f" for="emIn">Your email</label><div class="rem-row"><input class="in" id="emIn" type="email" autocomplete="email" placeholder="you@example.com"><button class="btn primary" id="emGo" style="flex:none">Email me a code</button></div>`}</div>`}
+ if(user)return `<div class="set-card"><h2><i data-lucide="cloud"></i> Signed in and syncing</h2><p class="note" style="margin:0 0 10px">${esc(user.email||"")} · <span class="sync-state">${esc(syncText())}</span></p><div class="bk-row"><button class="btn" id="syncNow"><i data-lucide="refresh-cw"></i>Sync now</button><button class="link-btn" id="signOut">Sign out</button></div></div>`;
+ return `<div class="set-card acct"><h2><i data-lucide="cloud"></i> Sign in to sync</h2><p class="note" style="margin:0 0 10px">See the same saves on your iPhone and Mac. Anything already saved on this device comes with you. No password needed: we email you a code.</p>${otpEmail?`<label class="f" for="otpIn">Enter the 6-digit code sent to ${esc(otpEmail)}</label><div class="rem-row"><input class="in" id="otpIn" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456"><button class="btn primary" id="otpGo" style="flex:none">Sign in</button></div><button class="link-btn" id="otpBack" style="margin-top:8px">Use a different email or send a new code</button>`:`<label class="f" for="emIn">Your email</label><div class="rem-row"><input class="in" id="emIn" type="email" autocomplete="email" placeholder="you@example.com"><button class="btn primary" id="emGo" style="flex:none">Email me a code</button></div>`}</div>`}
 function rateHTML(i){return `<div class="rate" aria-label="Rating">${[1,2,3,4,5].map(n=>`<button class="${i.rating>=n?"on":""}" data-rate="${n}" aria-label="${n} star${n>1?"s":""}">\u2605</button>`).join("")}</div>`}
 function nextDate(f){const v=f.renew||f.date;if(!v)return null;const [y,m,d]=v.split("-").map(Number);const n=new Date(y,m-1,d);if(isNaN(n))return null;const t=new Date();t.setHours(0,0,0,0);const fr=f.often||"";let g=0;
  while(n<t&&g<800){g++;if(/Weekly/.test(fr))n.setDate(n.getDate()+7);else if(/Monthly/.test(fr))n.setMonth(n.getMonth()+1);else if(/Quarterly/.test(fr))n.setMonth(n.getMonth()+3);else if(/Yearly/.test(fr))n.setFullYear(n.getFullYear()+1);else break}return n}
@@ -1408,7 +1414,7 @@ function cleanHome2(g,it,inbox){const tab=S.homeTab||"cats";const part=g.t.split
  const tile=(x,k)=>{const big=false;return `<button class="bt${big?" big":""}" style="--c:${x.c.c}" data-cat="${x.c.id}"><span class="bt-top"><span class="bt-ic"><i data-lucide="${x.c.icon}"></i></span>${x.a.length?`<span class="bt-n">${x.a.length}</span>`:""}</span>${big?`<span class="bt-thumbs">${x.a.slice(0,4).map(i=>`<span class="ph" style="--c:${x.c.c}">${i.img?`<img src="${i.img}" alt="">`:`<i data-lucide="${x.c.icon}"></i>`}</span>`).join("")}</span>`:""}<b>${x.c.name}</b><span class="bt-last">${esc(tagline(x.c))}</span></button>`};
  const seg=`<div class="seg mini-seg"><button class="m-only" data-go="collections">Collections</button><button data-htab="cats" aria-pressed="${tab==="cats"}">Categories</button><button data-htab="all" aria-pressed="${tab==="all"}">All saves</button></div>`;
  return `<div class="cl-top" style="align-items:flex-start"><div class="grow"><p class="eyebrow">${new Date().toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"})}</p><h1 class="cl-h2">${part}, <em>Chels</em></h1></div>${inbox.length?`<button class="icon-btn inb-m" data-cat="__inbox" aria-label="Inbox, ${inbox.length} to sort"><i data-lucide="inbox"></i><em class="nb">${inbox.length}</em></button>`:""}<button class="ask-btn" data-ask><i data-lucide="sparkles"></i>Ask</button><button class="icon-btn" data-go="search" aria-label="Search"><i data-lucide="search"></i></button><button class="icon-btn" data-go="settings" aria-label="Settings"><i data-lucide="settings"></i></button></div>
-<form class="hero-cap" id="composer" data-thread=""><div class="hc-row"><input id="cmsg" placeholder="What do you want to remember?" autocomplete="off"><button class="send" aria-label="Save"><i data-lucide="arrow-up"></i></button></div><div class="hc-sug" id="hcSug" hidden></div><div class="hc-types"><button type="button" data-qc="link"><i data-lucide="link"></i>Link</button><button type="button" data-qc="photo"><i data-lucide="image"></i>Photo</button><button type="button" data-qc="place"><i data-lucide="map-pin"></i>Place</button><button type="button" data-qc="voice"><i data-lucide="mic"></i>Voice</button><span class="priv-pill"><i data-lucide="lock"></i>Private to you</span></div></form>${seg.replace("seg mini-seg","seg mini-seg m-seg m-only")}
+<form class="hero-cap" id="composer" data-thread=""><div class="hc-row"><input id="cmsg" aria-label="What do you want to remember?" placeholder="What do you want to remember?" autocomplete="off"><button class="send" aria-label="Save"><i data-lucide="arrow-up"></i></button></div><div class="hc-sug" id="hcSug" hidden></div><div class="hc-types"><button type="button" data-qc="link"><i data-lucide="link"></i>Link</button><button type="button" data-qc="photo"><i data-lucide="image"></i>Photo</button><button type="button" data-qc="place"><i data-lucide="map-pin"></i>Place</button><button type="button" data-qc="voice"><i data-lucide="mic"></i>Voice</button><span class="priv-pill"><i data-lucide="lock"></i>Private to you</span></div></form>${seg.replace("seg mini-seg","seg mini-seg m-seg m-only")}
 
 ${tab==="cats"?`<div class="home-h"><h2 class="d-only">Your categories</h2><span class="d-only">${seg}</span></div><div class="bento">${used.map(tile).join("")}<button class="bt bt-add" data-newcat><span class="bt-add-ic"><i data-lucide="plus"></i></span><b>New category</b></button></div><div class="bt-empty d-only"><p>Start something new</p><div>${empty.map(x=>`<button data-activate="${x.c.id}"><i data-lucide="${x.c.icon}"></i>${x.c.name}</button>`).join("")}${IDEAS.filter(d=>!CATS.some(c=>c.name.toLowerCase()===d[0].toLowerCase())).slice(0,moreIdeas?99:6).map(d=>`<button data-idea="${d[0]}"><i data-lucide="${d[1]}"></i>${d[0]}</button>`).join("")}${moreIdeas?"":`<button data-moreideas>More ideas…</button>`}</div></div>`:`<div class="home-h"><h2>All saves</h2><span class="d-only">${seg}</span></div><div class="section-h" style="margin-top:0"><span class="note">${it.length} saves</span><span class="sh-r"><button class="link-btn" data-selmode>${sel?"Cancel":"Select"}</button>${layoutSeg()}</span></div>${cards(byNew(it))}`}`}
 const V={
@@ -1422,7 +1428,7 @@ home(){const g=greeting(),it=live(),inbox=it.filter(i=>!i.cat);
  if(S.style==="insta")return igHome(g,it,inbox);
  if(S.style==="uber")return ueHome(g,it,inbox,pick);
  return topbar(`<span class="proto">Prototype</span><h1>${g.t}</h1>`,g.l)+
- `<label class="searchbar"><span class="ico"><i data-lucide="search"></i></span><input id="homeSearch" placeholder="Search everything… try “dumplings”" autocomplete="off"></label>`+
+ `<label class="searchbar"><span class="ico"><i data-lucide="search"></i></span><input id="homeSearch" aria-label="Search your saves" placeholder="Search everything… try “dumplings”" autocomplete="off"></label>`+
  (inbox.length?`<button class="inbox-banner" data-cat="__inbox"><span class="ico"><i data-lucide="inbox"></i></span><span class="grow"><b>Inbox</b><span>Unsorted saves waiting for a home</span></span><span class="pill">${inbox.length}</span></button>`:"")+
  `<div class="section-h"><h2>Categories</h2></div><div class="tiles">${CATS.map(c=>`<button class="tile" style="--c:${c.c}" data-cat="${c.id}"><span class="dot"><i data-lucide="${c.icon}"></i></span><b>${c.name}</b><small>${it.filter(i=>i.cat===c.id).length} saved</small></button>`).join("")}</div>`+
  (pick?`<button class="remember" data-open="${pick.id}"><span class="thumb">${ph(pick,64)}</span><span><small>Remember this?</small><b>${esc(pick.title)}</b><span class="note" style="margin:0">Saved ${Math.round((now-pick.created)/day)||"today"}${Math.round((now-pick.created)/day)?" days ago":""}</span></span></button>`:"")+
@@ -1442,7 +1448,7 @@ list(){let arr,title,sub;const it=live();
  (ctx.cat&&ctx.cat!=="__inbox"?folderGrid(title):"")+
  `${ctx.cat&&ctx.cat!=="__inbox"?`<div class="section-h" style="margin-top:26px"><h2 style="font-size:17px">Saves in ${esc(ctx.sub?ctx.sub.split(" › ").pop():title)} <span class="note" style="font-weight:500">${arr.length}</span></h2>${layoutSeg()}</div>${arr.length||!ctx.kids.length?cards(byNew(arr)):`<p class="note">Nothing saved directly here yet. Open a folder above, or tap + Add.</p>`}`:`<div class="section-h" style="margin-top:4px"><span class="note">${arr.length} item${arr.length===1?"":"s"}</span>${layoutSeg()}</div>${cards(byNew(arr))}`}`},
 search(){return topbar(`<h1>Search</h1>`,"Find anything you’ve saved. Got a question? Try ✨ Ask on the home page.")+
- `<label class="searchbar big-search"><span class="ico"><i data-lucide="search"></i></span><input id="q" value="${esc(q)}" placeholder="dumplings Chatswood, gift for Mum…" autocomplete="off"></label>`+
+ `<label class="searchbar big-search"><span class="ico"><i data-lucide="search"></i></span><input id="q" aria-label="Search your saves" value="${esc(q)}" placeholder="dumplings Chatswood, gift for Mum…" autocomplete="off"></label>`+
  `<div class="chips"><button class="fchip" data-sf="" aria-pressed="${!sFilter}">All</button>${CATS.map(c=>`<button class="fchip" style="--c:${c.c}" data-sf="${c.id}" aria-pressed="${sFilter===c.id}">${c.name}</button>`).join("")}</div>`+
  `<div class="chips" style="margin-top:8px"><button class="fchip" data-sr="0" aria-pressed="${!sRating}">Any rating</button><button class="fchip" data-sr="4" aria-pressed="${sRating===4}">★ 4+</button><button class="fchip" data-sr="5" aria-pressed="${sRating===5}">★ 5</button><button class="fchip" disabled title="Needs location, coming in Phase 2">Near me</button></div>`+
  `<div id="results" style="margin-top:16px"></div>`},
@@ -1460,21 +1466,21 @@ collections(){const it=live();return topbar(`<h1>Collections</h1>`,"Group things
 settings(){const json=JSON.stringify(S);const kb=(json.length/1024).toFixed(0);const bin=S.items.filter(i=>i.deleted);
  const shades=[["white","Clean white","linear-gradient(135deg,#ffffff 50%,#c4577a 50%)"],["blush","Dusty rose","linear-gradient(135deg,#fdf6f8 50%,#c4577a 50%)"],["pastel","Soft pastel","linear-gradient(135deg,#fdf6f8 50%,#f19fbd 50%)"],["hot","Hot pink","linear-gradient(135deg,#fdf6f8 50%,#e0307a 50%)"],["sage","Rose & sage","linear-gradient(135deg,#dbe8d4 50%,#d0668a 50%)"],["peach","Peach sorbet","linear-gradient(135deg,#fde4d6 50%,#ee7a6a 50%)"],["lilac","Lilac","linear-gradient(135deg,#e6dcf5 50%,#c165b9 50%)"],["midnight","Midnight pink","linear-gradient(135deg,#140a14 50%,#ff4f9a 50%)"]];
  return `<button class="back" data-go="home"><i data-lucide="chevron-left"></i>Back</button>`+topbar(`<h1>Settings</h1>`,"")+
- accountCard()+`<div class="set-card"><h3><i data-lucide="lock"></i> Your saves are private</h3><p class="note" style="margin:0">Only you can see what you save. Nothing is shared unless you choose to send it, and you can export everything anytime below.</p></div>`+
- `<div class="set-card"><h3>Look</h3><div class="looks"><button class="look" data-look="chels" aria-pressed="${S.accent!=="everyone"}"><span class="lk-sw"><i style="background:#c4577a"></i><i style="background:#5fd3b0"></i><i style="background:#ffb347"></i><i style="background:#b39cff"></i></span><b>For Chels</b><span>Dusty pink with soft sorbet colours</span></button><button class="look" data-look="everyone" aria-pressed="${S.accent==="everyone"}"><span class="lk-sw"><i style="background:#2f6bd8"></i><i style="background:#12a594"></i><i style="background:#f76b15"></i><i style="background:#8e4ec6"></i></span><b>For everyone</b><span>Calm blue with clear, balanced colours</span></button></div></div>`+
- `<div class="set-card"><h3>Quick capture on your iPhone</h3><p class="note" style="margin:0 0 12px">Save in one tap without opening the app first. Preview of what you’ll set up:</p>
+ accountCard()+`<div class="set-card"><h2><i data-lucide="lock"></i> Your saves are private</h2><p class="note" style="margin:0">Only you can see what you save. Nothing is shared unless you choose to send it, and you can export everything anytime below.</p></div>`+
+ `<div class="set-card"><h2>Look</h2><div class="looks"><button class="look" data-look="chels" aria-pressed="${S.accent!=="everyone"}"><span class="lk-sw"><i style="background:#c4577a"></i><i style="background:#5fd3b0"></i><i style="background:#ffb347"></i><i style="background:#b39cff"></i></span><b>For Chels</b><span>Dusty pink with soft sorbet colours</span></button><button class="look" data-look="everyone" aria-pressed="${S.accent==="everyone"}"><span class="lk-sw"><i style="background:#2f6bd8"></i><i style="background:#12a594"></i><i style="background:#f76b15"></i><i style="background:#8e4ec6"></i></span><b>For everyone</b><span>Calm blue with clear, balanced colours</span></button></div></div>`+
+ `<div class="set-card"><h2>Quick capture on your iPhone</h2><p class="note" style="margin:0 0 12px">Save in one tap without opening the app first. Preview of what you’ll set up:</p>
  <div class="wpre"><div class="w-sm"><span class="w-logo"><i data-lucide="message-circle-heart"></i></span><b>Remember that</b><span class="w-plus"><i data-lucide="plus"></i></span></div>
  <div class="w-md"><b>Remember that</b><div class="w-btns">${[["link","Link"],["camera","Photo"],["map-pin","Place"],["mic","Voice"]].map(x=>`<span><i data-lucide="${x[0]}"></i>${x[1]}</span>`).join("")}</div></div>
  <div class="w-lock"><i data-lucide="plus"></i></div></div>
  <p class="note">Home Screen widget, quick buttons, and the Action Button on newer iPhones. These work through Apple’s free Shortcuts app, which we’ll set up together in the build.</p></div>`+
- `<div class="set-card"><h3>Font style</h3><div class="fonts">${[["modern","Modern",'"Instrument Sans",sans-serif'],["clean","Clean",'"Figtree",sans-serif'],["geo","Geometric",'"Outfit",sans-serif'],["elegant","Elegant",'"Fraunces",serif'],["friendly","Friendly",'"Nunito",sans-serif']].map(f=>`<button class="fontopt" data-font="${f[0]}" aria-pressed="${(S.font||"modern")===f[0]}"><b style='font-family:${f[2]}'>Aa</b><span>${f[1]}</span></button>`).join("")}</div></div>`+
+ `<div class="set-card"><h2>Font style</h2><div class="fonts">${[["modern","Modern",'"Instrument Sans",sans-serif'],["clean","Clean",'"Figtree",sans-serif'],["geo","Geometric",'"Outfit",sans-serif'],["elegant","Elegant",'"Fraunces",serif'],["friendly","Friendly",'"Nunito",sans-serif']].map(f=>`<button class="fontopt" data-font="${f[0]}" aria-pressed="${(S.font||"modern")===f[0]}"><b style='font-family:${f[2]}'>Aa</b><span>${f[1]}</span></button>`).join("")}</div></div>`+
  
- `<div class="set-card"><h3>Category colours</h3><div class="seg"><button data-pal="sorbet" aria-pressed="${S.palette==="sorbet"}">Sorbet</button><button data-pal="balanced" aria-pressed="${S.palette==="balanced"}">Balanced</button><button data-pal="classic" aria-pressed="${S.palette==="classic"}">Classic</button></div></div>`+
+ `<div class="set-card"><h2>Category colours</h2><div class="seg"><button data-pal="sorbet" aria-pressed="${S.palette==="sorbet"}">Sorbet</button><button data-pal="balanced" aria-pressed="${S.palette==="balanced"}">Balanced</button><button data-pal="classic" aria-pressed="${S.palette==="classic"}">Classic</button></div></div>`+
  
- `<div class="set-card"><h3>Categories</h3>${CATS.map(c=>`<div class="catrow"><span class="sw-c" style="background:${c.c}"></span><span>${c.name}</span><span>${live().filter(i=>i.cat===c.id).length}</span></div>`).join("")}<p class="note">Open a category and tap the pencil to rename, recolour or delete it.</p></div>`+
- `<div class="set-card"><h3>Storage used</h3><div class="bar"><i style="width:${Math.min(100,kb/50)}%"></i></div><span class="note">${kb} KB on this device</span></div>`+
- `<div class="set-card"><h3>Bin</h3>${bin.length?bin.map(i=>`<div class="catrow"><span>${esc(i.title)}</span><span><button class="link-btn" data-restore="${i.id}">Restore</button></span></div>`).join(""):`<p class="note" style="margin:0">Empty. Deleted items stay here for 30 days.</p>`}</div>`+
- `<div class="set-card"><h3><i data-lucide="shield-check"></i> Backup &amp; restore</h3><p class="note" style="margin:0 0 10px">Before a big update, copy a backup and paste it into Notes. If anything ever goes missing, paste it back here. It includes your saves, categories, folders, collections and settings.</p>
+ `<div class="set-card"><h2>Categories</h2>${CATS.map(c=>`<div class="catrow"><span class="sw-c" style="background:${c.c}"></span><span>${c.name}</span><span>${live().filter(i=>i.cat===c.id).length}</span></div>`).join("")}<p class="note">Open a category and tap the pencil to rename, recolour or delete it.</p></div>`+
+ `<div class="set-card"><h2>Storage used</h2><div class="bar"><i style="width:${Math.min(100,kb/50)}%"></i></div><span class="note">${kb} KB on this device</span></div>`+
+ `<div class="set-card"><h2>Bin</h2>${bin.length?bin.map(i=>`<div class="catrow"><span>${esc(i.title)}</span><span><button class="link-btn" data-restore="${i.id}">Restore</button></span></div>`).join(""):`<p class="note" style="margin:0">Empty. Deleted items stay here for 30 days.</p>`}</div>`+
+ `<div class="set-card"><h2><i data-lucide="shield-check"></i> Backup &amp; restore</h2><p class="note" style="margin:0 0 10px">Before a big update, copy a backup and paste it into Notes. If anything ever goes missing, paste it back here. It includes your saves, categories, folders, collections and settings.</p>
  <label class="bk-opt"><input type="checkbox" id="bkImg"> Include photos <span class="note" style="margin:0">(makes the backup much bigger)</span></label>
  <div class="bk-row"><button class="btn" id="copyBackup"><i data-lucide="copy"></i>Copy backup</button></div>
  <label class="f" for="bkIn">Restore from a backup</label><textarea class="in" id="bkIn" placeholder="Paste your backup text here" style="min-height:70px"></textarea>
@@ -1506,8 +1512,12 @@ function runSearch(){const words=q.toLowerCase().split(/\s+/).filter(Boolean);
  $("#results").innerHTML=cards(byNew(arr),words.length?"No matches for that":"Nothing here yet, go explore!");icons()}
 
 /* ---------- sheets ---------- */
-function openSheet(html){$("#sheet").innerHTML=`<div class="grab"></div>`+html;$("#sheet").classList.add("on");$("#scrim").classList.add("on");$("#sheet").scrollTop=0;icons()}
-function closeSheet(){$("#sheet").classList.remove("on");$("#scrim").classList.remove("on")}
+let sheetReturn=null;
+function openSheet(html){const sh=$("#sheet");if(!sh.classList.contains("on"))sheetReturn=document.activeElement;sh.innerHTML=`<div class="grab" aria-hidden="true"></div>`+html;sh.inert=false;sh.removeAttribute("aria-hidden");sh.classList.add("on");$("#scrim").classList.add("on");sh.scrollTop=0;icons();
+ const h=sh.querySelector("h2");sh.setAttribute("aria-label",h?h.textContent.trim():"Details");document.querySelector(".app").inert=true;const tb=$("#tabbar");if(tb)tb.inert=true;
+ setTimeout(()=>{if(!sh.contains(document.activeElement)){const f=sh.querySelector("input:not([type=hidden]):not([hidden]),textarea,button:not([data-close]),button");if(f)f.focus({preventScroll:true})}},60)}
+function closeSheet(){const sh=$("#sheet");const was=sh.classList.contains("on");sh.classList.remove("on");$("#scrim").classList.remove("on");sh.inert=true;sh.setAttribute("aria-hidden","true");document.querySelector(".app").inert=false;const tb=$("#tabbar");if(tb)tb.inert=false;
+ if(was&&sheetReturn&&document.contains(sheetReturn)){try{sheetReturn.focus({preventScroll:true})}catch(e){}}sheetReturn=null}
 
 let draft;
 function capture(t){draft={type:t||"note",title:"",link:"",notes:"",img:null,cat:null,sub:"",place:"",locOn:false,coll:"",ai:null,f:{},x:50,y:45};if(view==="list"&&ctx){if(ctx.cat&&ctx.cat!=="__inbox"){draft.cat=ctx.cat;draft.sub=ctx.sub||""}if(ctx.coll)draft.coll=ctx.coll}if(t==="place"){draft.type="note";draft.locOn=true;draft.placeFirst=true}drawCapture()}
