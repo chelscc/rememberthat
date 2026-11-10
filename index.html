@@ -20,7 +20,7 @@
 /* Layout: phone = stacked feed + bottom tab bar with centre capture; desktop = sidebar + wide masonry grid */
 :root{
   --bg:#fdf6f8; --surface:#ffffff; --surface-2:#f8ecf1; --ink:#2b1c24; --muted:#7b6670; --line:#efdde5;
-  --accent:#c4577a; --on-accent:#ffffff;
+  --accent:#b84d71; --on-accent:#ffffff;
   --font-display:"Instrument Sans",system-ui,-apple-system,sans-serif;
   --font-body:"Instrument Sans",system-ui,-apple-system,sans-serif;
   --r-lg:22px; --r-md:16px; --r-sm:12px;
@@ -32,7 +32,7 @@
   --bg:#181015; --surface:#231920; --surface-2:#2d2028; --ink:#f8e9ef; --muted:#b89fab; --line:#3a2b33;
   --shadow:0 6px 24px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-accent="everyone"]{--accent:#2f6bd8;--on-accent:#fff;--bg:#ffffff;--surface:#ffffff;--surface-2:#f2f4f7;--line:#e4e7ec;--ink:#1a1d23;--muted:#667085}
-:root[data-accent="white"]{--accent:#c4577a;--on-accent:#fff;--bg:#ffffff;--surface:#ffffff;--surface-2:#f4f3f4;--line:#e9e7e9;--ink:#1e1a1c;--muted:#6f686c}
+:root[data-accent="white"]{--accent:#b84d71;--on-accent:#fff;--bg:#ffffff;--surface:#ffffff;--surface-2:#f4f3f4;--line:#e9e7e9;--ink:#1e1a1c;--muted:#6f686c}
 :root[data-accent="sage"]{--accent:#d0668a;--on-accent:#fff;--bg:#f3f6f1;--surface-2:#e8efe5;--line:#dbe5d6;--ink:#22302a;--muted:#66756c}
 :root[data-accent="peach"]{--accent:#ee7a6a;--on-accent:#fff;--bg:#fff6f0;--surface-2:#fdeadf;--line:#f5dccd;--ink:#3a2420;--muted:#86685f}
 :root[data-accent="lilac"]{--accent:#c165b9;--on-accent:#fff;--bg:#f7f4fc;--surface-2:#eee8f8;--line:#e2daf0;--ink:#2a2236;--muted:#776c88}
@@ -940,6 +940,19 @@ textarea.in{min-height:72px;resize:vertical}
 }
 .sidebar .side-cats .side-btn .d{background:var(--c)!important;opacity:1!important;filter:none!important;border:0!important;width:10px;height:10px;border-radius:50%;box-shadow:none}
 @media(max-width:600px){.home-h{display:none}}
+
+/* critique fixes */
+@media(max-width:640px){.cv-actions>.cv-del{flex:0 0 44px;width:44px;padding:0}}
+.fold-sug{margin:12px 0 4px}
+@media(max-width:600px){
+ .cv-uniform .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ .cv-uniform .grid .card{aspect-ratio:auto!important;display:flex!important;flex-direction:column;border-radius:14px!important;border:1px solid var(--line)!important;background:var(--surface)}
+ .cv-uniform .grid .ph{position:relative!important;inset:auto!important;height:auto!important;aspect-ratio:4/3;flex:none}
+ .cv-uniform .grid .card .body{position:static!important;background:none!important;padding:8px 10px 10px!important}
+ .cv-uniform .grid .card b{color:var(--ink)!important;font-size:13.5px!important}
+ .cv-uniform .grid .facts{color:var(--muted)!important}
+ .bt b{white-space:normal!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.2}
+}
 </style>
 
 </head>
@@ -1047,7 +1060,7 @@ function greeting(){const h=new Date().getHours();const t=h<12?"Good morning":h<
 function coverType(i){const cv=i.cover||{};if(cv.type&&cv.type!=="auto")return cv.type;if(i.place)return "map";if(i.cat&&catKey(i.cat)==="quotes")return "text";return "icon"}
 function niceDate(v){try{const d=new Date(v+"T00:00");return isNaN(d)?v:d.toLocaleDateString("en-AU",{day:"numeric",month:"long"})}catch(e){return v}}
 function ph(i,h){const c=catOf(i);if(!i.img&&i.cat==="birthdays"&&i.f&&i.f.date&&h>=80)return `<div class="ph cov-text cov-bday" style="--c:${(i.cover&&i.cover.color)||c.c};height:${h}px"><span><small>${esc(niceDate(i.f.date))}</small>${esc(i.title)}</span></div>`;if(i.img&&i.img!=="cloud")return `<div class="ph" style="--c:${c.c};height:${h}px"><img src="${i.img}" alt=""></div>`;let t=coverType(i);const col=(i.cover&&i.cover.color)||c.c;
- if(t==="text"&&h<80)t="icon";if(t==="map"&&!i.place)t="icon";
+ if(t==="text"&&h<80)t="icon";if(t==="map"&&(!i.place||relBase!==null))t="icon";
  if(t==="text")return `<div class="ph cov-text" style="--c:${col};height:${h}px"><span>${esc(i.title)}</span></div>`;
  if(t==="map")return `<div class="ph cov-map" style="--c:${col};height:${h}px">${MAPSVG}<span class="pin" style="--c:${col};left:${i.x||50}%;top:${Math.max(32,i.y||45)}%"><i data-lucide="${c.icon}"></i></span></div>`;
  return `<div class="ph ${t==="pattern"?"cov-pat":"cov-icon"}" style="--c:${col};height:${h}px"><i data-lucide="${c.icon}"></i></div>`}
@@ -1257,8 +1270,8 @@ function catView0(title,arr){const c=catById(ctx.cat),here=ctx.sub?ctx.sub.split
  const deep=byNew(live().filter(i=>i.cat===c.id&&(!ctx.sub||i.sub===ctx.sub||(i.sub||"").startsWith(ctx.sub+" › "))));
  return `<div class="cv-top m-only"><button class="back" data-go="${ctx.from||"home"}"><i data-lucide="chevron-left"></i>${ctx.from==="search"?"Search":"Home"}</button></div>
 <div class="cat-layout"><section style="min-width:0">
-${catHeader(c,title,here,inHere)}${ctx.cat==="birthdays"&&!ctx.sub?bdayBlock():ctx.cat==="events"&&!ctx.sub?eventsBlock():(ctx.cat==="lifeadmin"||ctx.cat==="subscriptions")&&!ctx.sub?dueBlock(ctx.cat):""}${!ctx.sub?folderSug():""}
-${ctx.kids.length||ctx.addingSub?folderGrid(title):""}
+${catHeader(c,title,here,inHere)}${ctx.cat==="birthdays"&&!ctx.sub?bdayBlock():ctx.cat==="events"&&!ctx.sub?eventsBlock():(ctx.cat==="lifeadmin"||ctx.cat==="subscriptions")&&!ctx.sub?dueBlock(ctx.cat):""}
+${ctx.kids.length||ctx.addingSub?folderGrid(title):""}${!ctx.sub?folderSug():""}
 ${ctx.cat==="birthdays"&&!ctx.sub?"":allSavesSec(c,here,deep)}
 </section></div>`}
 function folderGrid(title){const cc=catById(ctx.cat).c,last=ctx.sub?ctx.sub.split(" › ").pop():title;
@@ -1368,7 +1381,7 @@ function dueBlock(cat){const t=new Date();t.setHours(0,0,0,0);const subs=cat==="
  let total="";if(subs){let m=0;live().filter(i=>i.cat===cat&&i.f&&i.f.status!=="Cancelled").forEach(i=>{const p=parseFloat(String(i.f.price||"").replace(/[^0-9.]/g,""));if(!p)return;const fr=i.f.often||"Monthly";m+=/Yearly/.test(fr)?p/12:/Weekly/.test(fr)?p*52/12:p});if(m)total=` <span class="note" style="font-weight:500">\u00b7 about $${m.toFixed(2)} a month</span>`}
  return `<div class="bday"><div class="upc"><h3>${subs?"Renewing soon":"Due soon"}${total}</h3>${up.length?`<div class="ur-row">${up.map(u=>`<button class="ur" data-open="${u.i.id}"><span class="ud ev"><small>${u.n.toLocaleDateString("en-AU",{month:"short"})}</small>${u.n.getDate()}</span><span class="grow"><b>${esc(u.i.title)}</b><span>${u.days===0?"Today":u.days===1?"Tomorrow":"In "+u.days+" days"}${u.i.f.price?" \u00b7 "+esc(u.i.f.price):""}${u.i.f.amount?" \u00b7 "+esc(u.i.f.amount):""}</span></span></button>`).join("")}</div>`:`<p class="note" style="margin:4px">Add ${subs?"a renewal":"a due"} date and it shows here.</p>`}</div></div>`}
 function folderSug(){const have=new Set(ctx.kids||[]);const sug=(SUBIDEAS[ctx.cat]||[]).filter(n=>!have.has(n));if(!sug.length)return "";
- return `<div class="fold-sug"><p class="fp-h" style="margin-top:0">Add a folder</p><div class="fprompts">${sug.map(n=>`<button class="sg ghost" data-mkfolder="${esc(n)}"><i data-lucide="folder-plus"></i>${esc(n)}</button>`).join("")}</div></div>`}
+ return `<div class="fold-sug"><p class="fp-h" style="margin-top:0">${ctx.kids.length?"More folder ideas":"Start with a folder"}</p><div class="fprompts">${sug.map(n=>`<button class="sg ghost" data-mkfolder="${esc(n)}"><i data-lucide="folder-plus"></i>${esc(n)}</button>`).join("")}</div></div>`}
 let sortDraft=null;
 function sortCard(id){const i=S.items.find(x=>x.id===id);sortDraft={id,cat:i.sug||guess(i).cat,sug:i.sug||guess(i).cat,f:{...(i.f||{})},sub:i.sub||"",notes:i.notes||""};drawSort()}
 function readSort(){const sd=sortDraft;const s=$("#s-sub");if(s)sd.sub=s.value;const n=$("#s-notes");if(n)sd.notes=n.value;document.querySelectorAll("#sheet [id^='s-f-'][data-fkey]").forEach(e=>sd.f[e.dataset.fkey]=e.value)}
@@ -1394,7 +1407,7 @@ function cleanHome2(g,it,inbox){const tab=S.homeTab||"cats";const part=g.t.split
  const used=cs.filter(x=>x.a.length||(S.active||[]).includes(x.c.id)).sort((a,b)=>a.c.name.localeCompare(b.c.name)),empty=cs.filter(x=>!x.a.length&&!(S.active||[]).includes(x.c.id)).sort((a,b)=>a.c.name.localeCompare(b.c.name));
  const tile=(x,k)=>{const big=false;return `<button class="bt${big?" big":""}" style="--c:${x.c.c}" data-cat="${x.c.id}"><span class="bt-top"><span class="bt-ic"><i data-lucide="${x.c.icon}"></i></span>${x.a.length?`<span class="bt-n">${x.a.length}</span>`:""}</span>${big?`<span class="bt-thumbs">${x.a.slice(0,4).map(i=>`<span class="ph" style="--c:${x.c.c}">${i.img?`<img src="${i.img}" alt="">`:`<i data-lucide="${x.c.icon}"></i>`}</span>`).join("")}</span>`:""}<b>${x.c.name}</b><span class="bt-last">${esc(tagline(x.c))}</span></button>`};
  const seg=`<div class="seg mini-seg"><button class="m-only" data-go="collections">Collections</button><button data-htab="cats" aria-pressed="${tab==="cats"}">Categories</button><button data-htab="all" aria-pressed="${tab==="all"}">All saves</button></div>`;
- return `<div class="cl-top" style="align-items:flex-start"><div class="grow"><p class="eyebrow">${new Date().toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"})}</p><h1 class="cl-h2">${part}, <em>Chels</em></h1></div><button class="cta" data-capture><i data-lucide="plus"></i>Capture</button>${inbox.length?`<button class="icon-btn inb-m" data-cat="__inbox" aria-label="Inbox, ${inbox.length} to sort"><i data-lucide="inbox"></i><em class="nb">${inbox.length}</em></button>`:""}<button class="ask-btn" data-ask><i data-lucide="sparkles"></i>Ask</button><button class="icon-btn" data-go="search" aria-label="Search"><i data-lucide="search"></i></button><button class="icon-btn" data-go="settings" aria-label="Settings"><i data-lucide="settings"></i></button></div>
+ return `<div class="cl-top" style="align-items:flex-start"><div class="grow"><p class="eyebrow">${new Date().toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"})}</p><h1 class="cl-h2">${part}, <em>Chels</em></h1></div>${inbox.length?`<button class="icon-btn inb-m" data-cat="__inbox" aria-label="Inbox, ${inbox.length} to sort"><i data-lucide="inbox"></i><em class="nb">${inbox.length}</em></button>`:""}<button class="ask-btn" data-ask><i data-lucide="sparkles"></i>Ask</button><button class="icon-btn" data-go="search" aria-label="Search"><i data-lucide="search"></i></button><button class="icon-btn" data-go="settings" aria-label="Settings"><i data-lucide="settings"></i></button></div>
 <form class="hero-cap" id="composer" data-thread=""><div class="hc-row"><input id="cmsg" placeholder="What do you want to remember?" autocomplete="off"><button class="send" aria-label="Save"><i data-lucide="arrow-up"></i></button></div><div class="hc-sug" id="hcSug" hidden></div><div class="hc-types"><button type="button" data-qc="link"><i data-lucide="link"></i>Link</button><button type="button" data-qc="photo"><i data-lucide="image"></i>Photo</button><button type="button" data-qc="place"><i data-lucide="map-pin"></i>Place</button><button type="button" data-qc="voice"><i data-lucide="mic"></i>Voice</button><span class="priv-pill"><i data-lucide="lock"></i>Private to you</span></div></form>${seg.replace("seg mini-seg","seg mini-seg m-seg m-only")}
 
 ${tab==="cats"?`<div class="home-h"><h2 class="d-only">Your categories</h2><span class="d-only">${seg}</span></div><div class="bento">${used.map(tile).join("")}<button class="bt bt-add" data-newcat><span class="bt-add-ic"><i data-lucide="plus"></i></span><b>New category</b></button></div><div class="bt-empty d-only"><p>Start something new</p><div>${empty.map(x=>`<button data-activate="${x.c.id}"><i data-lucide="${x.c.icon}"></i>${x.c.name}</button>`).join("")}${IDEAS.filter(d=>!CATS.some(c=>c.name.toLowerCase()===d[0].toLowerCase())).slice(0,moreIdeas?99:6).map(d=>`<button data-idea="${d[0]}"><i data-lucide="${d[1]}"></i>${d[0]}</button>`).join("")}${moreIdeas?"":`<button data-moreideas>More ideas…</button>`}</div></div>`:`<div class="home-h"><h2>All saves</h2><span class="d-only">${seg}</span></div><div class="section-h" style="margin-top:0"><span class="note">${it.length} saves</span><span class="sh-r"><button class="link-btn" data-selmode>${sel?"Cancel":"Select"}</button>${layoutSeg()}</span></div>${cards(byNew(it))}`}`}
